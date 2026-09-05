@@ -1,0 +1,10 @@
+{
+  "name": "Allergy Card",
+  "short_name": "Allergy Card",
+  "description": "Show any waiter what you can't eat — in their language. Works offline.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#B00020"
+}

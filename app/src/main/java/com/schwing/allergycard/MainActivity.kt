@@ -53,6 +53,7 @@ fun AllergyApp() {
     var expanded by remember { mutableStateOf(setOf<String>()) }
     var lang by remember { mutableStateOf(prefs.getString("lang", "en") ?: "en") }
     var showCard by remember { mutableStateOf(false) }
+    var showOnboarding by remember { mutableStateOf(!prefs.getBoolean("onboarded", false)) }
 
     LaunchedEffect(selected) { prefs.edit().putStringSet("selected", selected).apply() }
     LaunchedEffect(lang) { prefs.edit().putString("lang", lang).apply() }
@@ -98,6 +99,67 @@ fun AllergyApp() {
 
     if (showCard && selected.isNotEmpty()) {
         WaiterCard(lang = lang, selectedIds = selected, onChangeLang = { lang = it }, onClose = { showCard = false })
+    }
+
+    if (showOnboarding) {
+        Onboarding(onDone = {
+            prefs.edit().putBoolean("onboarded", true).apply()
+            showOnboarding = false
+        })
+    }
+}
+
+@Composable
+fun Onboarding(onDone: () -> Unit) {
+    Dialog(
+        onDismissRequest = onDone,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(modifier = Modifier.fillMaxSize(), color = PageBg) {
+            Column(
+                Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(28.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text("⚠️", fontSize = 72.sp)
+                Text("Allergy Card", color = AlertRed, fontSize = 32.sp, fontWeight = FontWeight.Bold)
+                Spacer(Modifier.height(8.dp))
+                Text("Show any waiter what you can't eat — in their language.", color = Ink, fontSize = 16.sp)
+                Spacer(Modifier.height(32.dp))
+
+                OnboardingStep("1", "🎯", "Pick your allergens", "Tap everything you're allergic to. Selecting one shows the dishes that usually hide it.")
+                OnboardingStep("2", "🌐", "Choose the local language", "French in Montréal, Japanese in Tokyo, Thai in Bangkok — the allergen names follow automatically.")
+                OnboardingStep("3", "🚨", "Show the red card", "One tap on the big red button gives the waiter a full-screen card they can't miss.")
+                OnboardingStep("4", "✈️", "Works fully offline", "Everything lives on your phone. No account, no internet needed at the table.")
+
+                Spacer(Modifier.height(32.dp))
+                Button(
+                    onClick = onDone,
+                    colors = ButtonDefaults.buttonColors(containerColor = AlertRed),
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    shape = RoundedCornerShape(28.dp),
+                ) {
+                    Text("GET STARTED", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("Your choices are saved on this device only.", color = Color(0xFF777777), fontSize = 13.sp)
+            }
+        }
+    }
+}
+
+@Composable
+fun OnboardingStep(number: String, emoji: String, title: String, body: String) {
+    Row(
+        Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(emoji, fontSize = 34.sp)
+        Spacer(Modifier.width(14.dp))
+        Column {
+            Text("$number. $title", fontWeight = FontWeight.Bold, fontSize = 17.sp, color = Ink)
+            Text(body, fontSize = 14.sp, color = Color(0xFF555555))
+        }
     }
 }
 
