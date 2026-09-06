@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Allergy Card — show the waiter, in their language</title>
-<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card with photos — in their language. Everything lives in a shareable link and QR code. Works offline.">
+<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card — in their language. Everything lives in a shareable link and QR code. Works offline.">
 <style>
   :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff; --sel:#fff0f0; --line:#e0dada; }
   * { box-sizing:border-box; }
@@ -20,7 +20,7 @@
   .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
   .allergen { border:1px solid var(--line); border-radius:14px; background:var(--card); cursor:pointer; user-select:none; overflow:hidden; }
   .allergen.selected { border-color:var(--red); border-width:2px; margin:-1px; }
-  .allergen .thumb { width:100%; height:110px; object-fit:cover; display:block; }
+  .allergen .thumb { font-size:52px; line-height:1; text-align:center; padding:18px 0 6px; }
   .allergen .body { padding:10px 12px; }
   .allergen .top { display:flex; align-items:center; gap:8px; }
   .allergen .name { font-weight:700; font-size:16px; }
@@ -45,13 +45,7 @@
   .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
   .acard { background:#fff; color:var(--ink); border-radius:16px; overflow:hidden; margin:16px 0; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
-  .acard .imwrap { position:relative; }
-  .acard .strip { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; }
-  .acard .strip::-webkit-scrollbar { display:none; }
-  .acard .strip img { flex:0 0 100%; width:100%; height:200px; object-fit:cover; scroll-snap-align:center; display:block; border:0; }
-  .dots { position:absolute; bottom:10px; left:0; right:0; display:flex; gap:7px; justify-content:center; pointer-events:none; }
-  .dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.55); box-shadow:0 0 4px rgba(0,0,0,.5); }
-  .dot.on { background:#fff; }
+  .acard .e { font-size:72px; text-align:center; padding:20px 0 0; }
   .acard .cbody { padding:12px 14px 14px; }
   .acard .nm { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
   .acard .nm .n { font-size:26px; font-weight:800; }
@@ -84,10 +78,10 @@
 <div id="onboard">
   <div class="inner">
     <h1>Allergy Card</h1>
-    <p class="sub">Show any waiter what you can't eat, with photos, in their language.</p>
+    <p class="sub">Show any waiter what you can't eat, in their language.</p>
     <div class="step"><div class="num">1</div><div><b>Pick your allergens</b><span>Tap everything you're allergic to — one tap selects, another deselects.</span></div></div>
     <div class="step"><div class="num">2</div><div><b>Choose the local language</b><span>French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
-    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with photos and a QR they can scan.</span></div></div>
+    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with a QR they can scan.</span></div></div>
     <div class="step"><div class="num">4</div><div><b>Share by link or QR</b><span>Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
     <button id="onboardGo">GET STARTED</button>
     <p class="fine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
@@ -185,22 +179,22 @@ const SCAN_CAPTION = {
   ar:"امسح لفتح هذه البطاقة",
 };
 const ALLERGENS = [
-  {id:"peanuts",dishes:["Pad Thai","Satay skewers","Peanut butter cookies","Mole sauce"],watch:"Often hidden in Asian sauces, garnishes, and desserts.",names:{en:"peanuts",fr:"arachides",es:"cacahuetes / maní",it:"arachidi",de:"Erdnüsse",pt:"amendoim",ja:"ピーナッツ",zh:"花生",ko:"땅콩",th:"ถั่วลิสง",vi:"đậu phộng",ar:"فول سوداني"}},
-  {id:"tree_nuts",dishes:["Pesto (pine nuts)","Baklava","Almond croissants","Granola"],watch:"Includes almonds, cashews, walnuts, hazelnuts, pistachios, and pine nuts. Watch nut oils in salads and pastries.",names:{en:"tree nuts",fr:"fruits à coque",es:"frutos secos",it:"frutta a guscio",de:"Nüsse",pt:"frutos de casca rija",ja:"木の実類",zh:"坚果",ko:"견과류",th:"ถั่วเปลือกแข็ง",vi:"các loại hạt",ar:"مكسرات"}},
-  {id:"milk",dishes:["Butter chicken","Mac & cheese","Bechamel lasagna","Crème brûlée"],watch:"Butter, cream, cheese, and ghee count too. Many curries and sauces use cream or butter.",names:{en:"milk / dairy",fr:"lait",es:"leche",it:"latte",de:"Milch",pt:"leite",ja:"牛乳",zh:"牛奶",ko:"우유",th:"นม",vi:"sữa",ar:"حليب"}},
-  {id:"egg",dishes:["Quiche","Caesar dressing","Tamago sushi","Custard"],watch:"Also in fresh pasta, mayo, glazing on pastries, and many desserts.",names:{en:"eggs",fr:"œufs",es:"huevos",it:"uova",de:"Eier",pt:"ovos",ja:"卵",zh:"鸡蛋",ko:"계란",th:"ไข่",vi:"trứng",ar:"بيض"}},
-  {id:"wheat_gluten",dishes:["Ramen","Pizza","Dumplings","Soy sauce dishes"],watch:"Regular soy sauce contains wheat. Gluten also hides in seitan, malt, and many sauces.",names:{en:"wheat / gluten",fr:"blé / gluten",es:"trigo / gluten",it:"grano / glutine",de:"Weizen / Gluten",pt:"trigo / glúten",ja:"小麦・グルテン",zh:"小麦 / 麸质",ko:"밀 / 글루텐",th:"ข้าวสาลี / กลูเตน",vi:"lúa mì / gluten",ar:"قمح / جلوتين"}},
-  {id:"soy",dishes:["Miso soup","Edamame","Tofu dishes","Veggie burgers"],watch:"Common in Asian cooking via soy sauce, tofu, and tempeh; soy lecithin is in many packaged foods.",names:{en:"soy",fr:"soja",es:"soja",it:"soia",de:"Soja",pt:"soja",ja:"大豆",zh:"大豆",ko:"대두",th:"ถั่วเหลือง",vi:"đậu nành",ar:"صويا"}},
-  {id:"peas",dishes:["Split pea soup","Pea & ham soup","Risi e bisi","Matar paneer"],watch:"Pea protein is now common in meat substitutes and protein snacks. Peas also mix invisibly into fried rice, pilafs, and soups.",names:{en:"peas",fr:"pois",es:"guisantes",it:"piselli",de:"Erbsen",pt:"ervilhas",ja:"グリーンピース",zh:"豌豆",ko:"완두콩",th:"ถั่วลันเตา",vi:"đậu Hà Lan",ar:"بازلاء"}},
-  {id:"chickpeas",dishes:["Hummus","Falafel","Chana masala","Pakora fritters"],watch:"Hummus arrives unasked with many mezze and wraps. Chickpea flour (gram / besan) thickens fritters like pakora and some batters.",names:{en:"chickpeas",fr:"pois chiches",es:"garbanzos",it:"ceci",de:"Kichererbsen",pt:"grão-de-bico",ja:"ひよこ豆",zh:"鹰嘴豆",ko:"병아리콩",th:"ถั่วชิกพี",vi:"đậu gà",ar:"حمص"}},
-  {id:"lentils",dishes:["Dal curries","Lentil soup","Mujadara","Mercimek köfte"],watch:"Dal and lentil soups rarely say 'lentil' on the menu. Lentils also stand in for meat in many vegan patties and sauces.",names:{en:"lentils",fr:"lentilles",es:"lentejas",it:"lenticchie",de:"Linsen",pt:"lentilhas",ja:"レンズ豆",zh:"扁豆",ko:"렌틸콩",th:"ถั่วเลนทิล",vi:"đậu lăng",ar:"عدس"}},
-  {id:"fish",dishes:["Bouillabaisse","Sushi","Fish sauce dishes","Caesar dressing"],watch:"Fish sauce is ubiquitous in Southeast Asian cooking. Worcestershire sauce contains anchovies.",names:{en:"fish",fr:"poisson",es:"pescado",it:"pesce",de:"Fisch",pt:"peixe",ja:"魚",zh:"鱼类",ko:"생선",th:"ปลา",vi:"cá",ar:"سمك"}},
-  {id:"shellfish",dishes:["Shrimp scampi","Crab rangoon","Lobster bisque","Shrimp paste curries"],watch:"Shrimp paste (belacan / kapi / mắm tôm) hides in many Southeast Asian curries and dips. Shared fryers are risky too.",names:{en:"shellfish & crustaceans",fr:"crustacés et mollusques",es:"mariscos",it:"crostacei e molluschi",de:"Schalentiere",pt:"mariscos",ja:"甲殻類・貝類",zh:"贝类 / 甲壳类",ko:"갑각류·조개류",th:"อาหารทะเล (กุ้ง ปู หอย)",vi:"hải sản có vỏ",ar:"ثمار البحر القشرية"}},
-  {id:"sesame",dishes:["Hummus / tahini","Sesame buns","Goma-ae spinach","Halva"],watch:"Sesame oil is heavily used in East Asian kitchens. Sesame seeds cover most burger buns.",names:{en:"sesame",fr:"sésame",es:"sésamo / ajonjolí",it:"sesamo",de:"Sesam",pt:"gergelim",ja:"ごま",zh:"芝麻",ko:"참깨",th:"งา",vi:"mè / vừng",ar:"سمسم"}},
-  {id:"mustard",dishes:["Dijon vinaigrette","Deli sausages","Curry pastes","Pickled dishes"],watch:"Mustard seed powder sneaks into sauces, sausages, pickles, and many prepared foods.",names:{en:"mustard",fr:"moutarde",es:"mostaza",it:"senape",de:"Senf",pt:"mostarda",ja:"マスタード・からし",zh:"芥末",ko:"겨자",th:"มัสตาร์ด",vi:"mù tạt",ar:"خردل"}},
-  {id:"celery",dishes:["Vegetable stocks & soups","Waldorf salad","Seasoning mixes","Bouillon cubes"],watch:"Celery is a base of most stocks and bouillons across Europe, plus spice mixes. It is rarely listed on the plate.",names:{en:"celery",fr:"céleri",es:"apio",it:"sedano",de:"Sellerie",pt:"aipo",ja:"セロリ",zh:"芹菜",ko:"셀러리",th:"ขึ้นฉ่าย",vi:"cần tây",ar:"كرفس"}},
-  {id:"sulfites",dishes:["Wine & beer","Dried fruit","Shrimp cocktail","French fries (frozen)"],watch:"Used as a preservative in wine, dried fruit, some processed shrimp, and some frozen potatoes.",names:{en:"sulfites",fr:"sulfites",es:"sulfitos",it:"solfiti",de:"Sulfite",pt:"sulfitos",ja:"亜硫酸塩",zh:"亚硫酸盐",ko:"아황산염",th:"ซัลไฟต์",vi:"sunfit",ar:"كبريتيت"}},
-  {id:"lupin",dishes:["Lupin beans","Gluten-free pastas","Some biscuits","Lupin-flour bread"],watch:"Lupin flour is increasingly used in gluten-free and protein-enriched baked goods.",names:{en:"lupin",fr:"lupin",es:"altramces / lupino",it:"lupini",de:"Lupinen",pt:"tremoços",ja:"ルピナス",zh:"羽扇豆",ko:"루핀",th:"ถั่วลูพิน",vi:"đậu lupin",ar:"لوبين"}},
+  {id:"peanuts",emoji:"🥜",dishes:["Pad Thai","Satay skewers","Peanut butter cookies","Mole sauce"],watch:"Often hidden in Asian sauces, garnishes, and desserts.",names:{en:"peanuts",fr:"arachides",es:"cacahuetes / maní",it:"arachidi",de:"Erdnüsse",pt:"amendoim",ja:"ピーナッツ",zh:"花生",ko:"땅콩",th:"ถั่วลิสง",vi:"đậu phộng",ar:"فول سوداني"}},
+  {id:"tree_nuts",emoji:"🌰",dishes:["Pesto (pine nuts)","Baklava","Almond croissants","Granola"],watch:"Includes almonds, cashews, walnuts, hazelnuts, pistachios, and pine nuts. Watch nut oils in salads and pastries.",names:{en:"tree nuts",fr:"fruits à coque",es:"frutos secos",it:"frutta a guscio",de:"Nüsse",pt:"frutos de casca rija",ja:"木の実類",zh:"坚果",ko:"견과류",th:"ถั่วเปลือกแข็ง",vi:"các loại hạt",ar:"مكسرات"}},
+  {id:"milk",emoji:"🥛",dishes:["Butter chicken","Mac & cheese","Bechamel lasagna","Crème brûlée"],watch:"Butter, cream, cheese, and ghee count too. Many curries and sauces use cream or butter.",names:{en:"milk / dairy",fr:"lait",es:"leche",it:"latte",de:"Milch",pt:"leite",ja:"牛乳",zh:"牛奶",ko:"우유",th:"นม",vi:"sữa",ar:"حليب"}},
+  {id:"egg",emoji:"🥚",dishes:["Quiche","Caesar dressing","Tamago sushi","Custard"],watch:"Also in fresh pasta, mayo, glazing on pastries, and many desserts.",names:{en:"eggs",fr:"œufs",es:"huevos",it:"uova",de:"Eier",pt:"ovos",ja:"卵",zh:"鸡蛋",ko:"계란",th:"ไข่",vi:"trứng",ar:"بيض"}},
+  {id:"wheat_gluten",emoji:"🌾",dishes:["Ramen","Pizza","Dumplings","Soy sauce dishes"],watch:"Regular soy sauce contains wheat. Gluten also hides in seitan, malt, and many sauces.",names:{en:"wheat / gluten",fr:"blé / gluten",es:"trigo / gluten",it:"grano / glutine",de:"Weizen / Gluten",pt:"trigo / glúten",ja:"小麦・グルテン",zh:"小麦 / 麸质",ko:"밀 / 글루텐",th:"ข้าวสาลี / กลูเตน",vi:"lúa mì / gluten",ar:"قمح / جلوتين"}},
+  {id:"soy",emoji:"🫘",dishes:["Miso soup","Edamame","Tofu dishes","Veggie burgers"],watch:"Common in Asian cooking via soy sauce, tofu, and tempeh; soy lecithin is in many packaged foods.",names:{en:"soy",fr:"soja",es:"soja",it:"soia",de:"Soja",pt:"soja",ja:"大豆",zh:"大豆",ko:"대두",th:"ถั่วเหลือง",vi:"đậu nành",ar:"صويا"}},
+  {id:"peas",emoji:"🫛",dishes:["Split pea soup","Pea & ham soup","Risi e bisi","Matar paneer"],watch:"Pea protein is now common in meat substitutes and protein snacks. Peas also mix invisibly into fried rice, pilafs, and soups.",names:{en:"peas",fr:"pois",es:"guisantes",it:"piselli",de:"Erbsen",pt:"ervilhas",ja:"グリーンピース",zh:"豌豆",ko:"완두콩",th:"ถั่วลันเตา",vi:"đậu Hà Lan",ar:"بازلاء"}},
+  {id:"chickpeas",emoji:"🧆",dishes:["Hummus","Falafel","Chana masala","Pakora fritters"],watch:"Hummus arrives unasked with many mezze and wraps. Chickpea flour (gram / besan) thickens fritters like pakora and some batters.",names:{en:"chickpeas",fr:"pois chiches",es:"garbanzos",it:"ceci",de:"Kichererbsen",pt:"grão-de-bico",ja:"ひよこ豆",zh:"鹰嘴豆",ko:"병아리콩",th:"ถั่วชิกพี",vi:"đậu gà",ar:"حمص"}},
+  {id:"lentils",emoji:"🍛",dishes:["Dal curries","Lentil soup","Mujadara","Mercimek köfte"],watch:"Dal and lentil soups rarely say 'lentil' on the menu. Lentils also stand in for meat in many vegan patties and sauces.",names:{en:"lentils",fr:"lentilles",es:"lentejas",it:"lenticchie",de:"Linsen",pt:"lentilhas",ja:"レンズ豆",zh:"扁豆",ko:"렌틸콩",th:"ถั่วเลนทิล",vi:"đậu lăng",ar:"عدس"}},
+  {id:"fish",emoji:"🐟",dishes:["Bouillabaisse","Sushi","Fish sauce dishes","Caesar dressing"],watch:"Fish sauce is ubiquitous in Southeast Asian cooking. Worcestershire sauce contains anchovies.",names:{en:"fish",fr:"poisson",es:"pescado",it:"pesce",de:"Fisch",pt:"peixe",ja:"魚",zh:"鱼类",ko:"생선",th:"ปลา",vi:"cá",ar:"سمك"}},
+  {id:"shellfish",emoji:"🦐",dishes:["Shrimp scampi","Crab rangoon","Lobster bisque","Shrimp paste curries"],watch:"Shrimp paste (belacan / kapi / mắm tôm) hides in many Southeast Asian curries and dips. Shared fryers are risky too.",names:{en:"shellfish & crustaceans",fr:"crustacés et mollusques",es:"mariscos",it:"crostacei e molluschi",de:"Schalentiere",pt:"mariscos",ja:"甲殻類・貝類",zh:"贝类 / 甲壳类",ko:"갑각류·조개류",th:"อาหารทะเล (กุ้ง ปู หอย)",vi:"hải sản có vỏ",ar:"ثمار البحر القشرية"}},
+  {id:"sesame",emoji:"🌱",dishes:["Hummus / tahini","Sesame buns","Goma-ae spinach","Halva"],watch:"Sesame oil is heavily used in East Asian kitchens. Sesame seeds cover most burger buns.",names:{en:"sesame",fr:"sésame",es:"sésamo / ajonjolí",it:"sesamo",de:"Sesam",pt:"gergelim",ja:"ごま",zh:"芝麻",ko:"참깨",th:"งา",vi:"mè / vừng",ar:"سمسم"}},
+  {id:"mustard",emoji:"🟡",dishes:["Dijon vinaigrette","Deli sausages","Curry pastes","Pickled dishes"],watch:"Mustard seed powder sneaks into sauces, sausages, pickles, and many prepared foods.",names:{en:"mustard",fr:"moutarde",es:"mostaza",it:"senape",de:"Senf",pt:"mostarda",ja:"マスタード・からし",zh:"芥末",ko:"겨자",th:"มัสตาร์ด",vi:"mù tạt",ar:"خردل"}},
+  {id:"celery",emoji:"🥬",dishes:["Vegetable stocks & soups","Waldorf salad","Seasoning mixes","Bouillon cubes"],watch:"Celery is a base of most stocks and bouillons across Europe, plus spice mixes. It is rarely listed on the plate.",names:{en:"celery",fr:"céleri",es:"apio",it:"sedano",de:"Sellerie",pt:"aipo",ja:"セロリ",zh:"芹菜",ko:"셀러리",th:"ขึ้นฉ่าย",vi:"cần tây",ar:"كرفس"}},
+  {id:"sulfites",emoji:"🍷",dishes:["Wine & beer","Dried fruit","Shrimp cocktail","French fries (frozen)"],watch:"Used as a preservative in wine, dried fruit, some processed shrimp, and some frozen potatoes.",names:{en:"sulfites",fr:"sulfites",es:"sulfitos",it:"solfiti",de:"Sulfite",pt:"sulfitos",ja:"亜硫酸塩",zh:"亚硫酸盐",ko:"아황산염",th:"ซัลไฟต์",vi:"sunfit",ar:"كبريتيت"}},
+  {id:"lupin",emoji:"🌼",dishes:["Lupin beans","Gluten-free pastas","Some biscuits","Lupin-flour bread"],watch:"Lupin flour is increasingly used in gluten-free and protein-enriched baked goods.",names:{en:"lupin",fr:"lupin",es:"altramces / lupino",it:"lupini",de:"Lupinen",pt:"tremoços",ja:"ルピナス",zh:"羽扇豆",ko:"루핀",th:"ถั่วลูพิน",vi:"đậu lupin",ar:"لوبين"}},
 ];
 const BY_ID = {};
 ALLERGENS.forEach(a => BY_ID[a.id] = a);
@@ -292,7 +286,7 @@ function renderGrid(){
   grid.innerHTML = ALLERGENS.map(a => {
     const on = !!state.selected[a.id], exp = state.expanded.has(a.id);
     return `<div class="allergen ${on?"selected":""}" data-id="${a.id}">
-      <img class="thumb" loading="lazy" src="images/${a.id}/1.jpg" alt="${esc(a.names.en)}">
+      <div class="thumb">${a.emoji}</div>
       <div class="body">
         <div class="top">
           <div>
@@ -328,35 +322,18 @@ function renderButton(){
   document.getElementById("cardBtn").disabled = n === 0;
   document.getElementById("count").textContent = n ? `${n} allergen${n>1?"s":""} selected` : "Select at least one allergen";
 }
-function stripHtml(dots){
-  // swipe position -> pagination dots
-  const on = idx => { dots.forEach((d,i)=>d.classList.toggle("on", i===idx)); };
-  on(0);
-  return on;
-}
 function openCard(){
   document.getElementById("phrase").textContent = PHRASES[state.lang] || PHRASES.en;
   document.getElementById("phraseEn").textContent = state.lang==="en" ? "" : PHRASES.en;
   const sel = ALLERGENS.filter(a => state.selected[a.id]);
   document.getElementById("cardList").innerHTML = sel.map(a => `
     <div class="acard">
-      <div class="imwrap">
-        <div class="strip">${[1,2,3].map(i=>`<img loading="lazy" src="images/${a.id}/${i}.jpg" alt="${esc(a.names.en)}">`).join("")}</div>
-        <div class="dots">${"<div class='dot'></div>".repeat(3)}</div>
-      </div>
+      <div class="e">${a.emoji}</div>
       <div class="cbody">
         <div class="nm"><span class="n">${esc(name(a,state.lang))}</span>
         ${state.lang!=="en" ? `<span class="en">${esc(a.names.en)}</span>` : ""}</div>
       </div>
     </div>`).join("");
-  document.querySelectorAll("#cardList .strip").forEach(strip => {
-    const dots = strip.parentElement.querySelectorAll(".dot");
-    const setDot = stripHtml(dots);
-    strip.addEventListener("scroll", () => {
-      const idx = Math.round(strip.scrollLeft / strip.clientWidth);
-      setDot(idx);
-    });
-  });
   const url = profileUrl();
   document.getElementById("cardQr").innerHTML = qrImg(url, 3);
   document.getElementById("cardQrCap").textContent = SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
