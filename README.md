@@ -28,16 +28,23 @@ Change something once in `docs/`, and both the site and the app get it.
 
 ## Features
 
-- 16 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
-  lentils, fish, shellfish, sesame, mustard, celery, sulfites, lupin), each shown with a
+- 14 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
+  lentils, fish, shellfish, sesame, mustard, sulfites), each shown with a
   big emoji so the card reads at a glance. A search bar filters the list instantly.
+- **Add your own restrictions.** Anything beyond the built-in list — a rare allergy, a
+  preference, a medication interaction — can be added with your own wording and an emoji
+  you pick. Custom entries select, search, edit, remove and share exactly like the
+  built-ins; because they're free text, they appear on the card in every language
+  word-for-word as typed.
 - **188 languages.** On first launch you pick your own language for the app itself —
-  the interface follows it from then on. The card language (the one the waiter sees)
-  is a separate, searchable picker covering everything from French and Japanese to
-  Quechua, Cantonese and Amharic.
-- A shareable card link and QR code: the whole profile (allergens, language) is
-  encoded in the URL, so the waiter can scan the QR and carry the card to the kitchen
-  on their own phone.
+  the interface follows it from then on (change it later from the ⚙️ settings gear).
+  The waiter's language is a separate, searchable picker covering everything from
+  French and Japanese to Quechua, Cantonese and Amharic. Dialogs close with a
+  simple X, and on Android the back button closes the top dialog first.
+- A shareable card link and QR code: the whole profile (allergens, custom entries,
+  language) is encoded in the URL, so the waiter can scan the QR and carry the card
+  to the kitchen on their own phone. Older links keep working — classic `?a=ids&lang=xx`
+  links (including the retired id:level format) open exactly as before.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
 - A full-screen, high-contrast "show the waiter" card, with RTL support for

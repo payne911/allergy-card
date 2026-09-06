@@ -30,7 +30,7 @@ UI_STRINGS = [
  "Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.",
  "GET STARTED",
  "Your choices are saved in this browser only. Nothing is sent anywhere.",
- "Language:",
+ "Waiter's language:",
  "Show QR",
  "Copy link",
  "SHOW THE WAITER CARD",
@@ -45,10 +45,18 @@ UI_STRINGS = [
  "Scan to open this card on your phone",
  "Share this allergy card",
  "This QR code and link carry the full profile: allergens and language.",
- "Close",
  "Choose your language",
  "Search languages\u2026",
  "Search allergens\u2026",
+ "Add your own +",
+ "Add a custom restriction",
+ "Name it exactly as you'd say it",
+ "Pick an emoji",
+ "Save",
+ "Add",
+ "Edit",
+ "Remove",
+ "App",
 ]
 
 # ---- language list: ISO 639-1 + major 639-2/3 supplements -----------------
@@ -118,50 +126,64 @@ def parse_english():
         if m: watch = json.loads(m.group(1))
     return ids, names, watch
 
+_JAR = os.path.join(os.environ.get("TMPDIR", "/tmp"), "allergy_gtx_cookies")
+
+def _http_get(url):
+    """One GET through the abuse-check redirects. Returns (status, body)."""
+    r = subprocess.run(
+        ["curl", "-sL", "-c", _JAR, "-b", _JAR, "--max-time", "40",
+         "-w", "\n%{http_code}", url],
+        capture_output=True, text=True)
+    body, _, status = r.stdout.rpartition("\n")
+    try:
+        code = int(status.strip())
+    except ValueError:
+        code = 0
+    return code, body
+
 def _curl_batch(tl, queries):
-    """All strings newline-joined into ONE query; the API returns one segment
-    per line, so a whole language is a single request."""
+    """Newline-joined multi-string queries, one segment per line. Chunked
+    (~24 strings) because big payloads and fragment lines sometimes make the
+    service merge lines; a count mismatch splits recursively down to single
+    strings, which always resolve. 404 means the locale is unsupported;
+    429/302 are transient throttling and get retries with growing pauses."""
+    if len(queries) > 24:
+        mid = len(queries) // 2
+        return _curl_batch(tl, queries[:mid]) + _curl_batch(tl, queries[mid:])
     joined = "\n".join(queries)
-    args = ["curl", "-sf", "--max-time", "40", "-X", "POST",
-            "https://translate.googleapis.com/translate_a/single",
-            "--data-urlencode", "client=gtx", "--data-urlencode", "sl=en",
-            "--data-urlencode", "tl=" + tl, "--data-urlencode", "dt=t",
-            "--data-urlencode", "q=" + joined]
-    r = subprocess.run(args, capture_output=True, text=True)
-    if r.returncode != 0:
-        raise RuntimeError("curl rc=%d %s" % (r.returncode, r.stderr[:60]))
-    arr = json.loads(r.stdout)
+    url = ("https://translate.googleapis.com/translate_a/single?client=gtx"
+           "&sl=en&tl=" + urllib.parse.quote(tl) + "&dt=t&q="
+           + urllib.parse.quote(joined))
+    code, body, last = 0, "", None
+    for attempt in range(6):
+        code, body = _http_get(url)
+        if code == 200 and body.lstrip().startswith("["):
+            break
+        if code == 404:
+            raise UnsupportedError(tl)
+        last = "http %d" % code
+        time.sleep(2.5 * (attempt + 1))
+    else:
+        raise RuntimeError("%s: %s" % (tl, last))
+    arr = json.loads(body)
     segs = [seg[0].strip() for seg in arr[0]]
     if len(segs) != len(queries):
-        # the service merged lines for this language: fall back to one
-        # request per string (only edge languages need this)
-        out = []
-        for q in queries:
-            sub = json.loads(subprocess.run(
-                ["curl", "-sf", "--max-time", "40", "-X", "POST",
-                 "https://translate.googleapis.com/translate_a/single",
-                 "--data-urlencode", "client=gtx", "--data-urlencode", "sl=en",
-                 "--data-urlencode", "tl=" + tl, "--data-urlencode", "dt=t",
-                 "--data-urlencode", "q=" + q],
-                capture_output=True, text=True).stdout)
-            out.append(sub[0][0][0].strip())
-            time.sleep(0.12)
-        return out
+        if len(queries) == 1:
+            # a single multi-sentence string may come back as several
+            # sentence segments: it's all one translation, stitch it
+            return [" ".join(segs)]
+        mid = len(queries) // 2
+        return _curl_batch(tl, queries[:mid]) + _curl_batch(tl, queries[mid:])
     return segs
 
+class UnsupportedError(Exception):
+    pass
+
 def gtx_batch(tl, queries):
-    last = None
-    for attempt in range(4):
-        try:
-            return _curl_batch(tl, queries)
-        except Exception as e:
-            last = str(e)
-            if "rc=22" in last:
-                # 404 from the endpoint: this locale is truly unsupported,
-                # re-asking will never help - fail fast instead of backoffs
-                break
-            time.sleep(1.5 * (attempt + 1))
-    raise RuntimeError("%s: %s" % (tl, last))
+    try:
+        return _curl_batch(tl, queries)
+    except UnsupportedError:
+        raise RuntimeError("%s: unsupported (404)" % tl)
 
 def native_name(code, fallback):
     """CLDR: how the language calls itself. Fails quietly to English name."""
@@ -224,8 +246,8 @@ def main():
                 f.write("window.ALLERGY_LANG=window.ALLERGY_LANG||{};ALLERGY_LANG[%s]="
                         % json.dumps(code) + json.dumps(data, ensure_ascii=False) + ";")
             done.append(code)
-            if len(done) % 25 == 0: print("…%d written" % len(done), flush=True)
-            time.sleep(0.05)
+            print("ok %-6s (%d)" % (code, len(done)), flush=True)
+            time.sleep(0.8)
         except Exception as e:
             failed.append((code, str(e)[:80]))
             print("FAIL %s: %s" % (code, str(e)[:80]), flush=True)

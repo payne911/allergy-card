@@ -39,8 +39,6 @@
   .overlay .close { position:fixed; top:10px; right:14px; font-size:34px; color:#fff; background:none; border:0; cursor:pointer; }
   .overlay .inner { max-width:640px; margin:0 auto; text-align:center; }
   .overlay select { margin:0 auto 10px; display:block; }
-  .tri { width:0; height:0; border-left:34px solid transparent; border-right:34px solid transparent; border-bottom:58px solid #fff; margin:14px auto 0; position:relative; }
-  .tri span { position:absolute; left:-9px; top:16px; font-size:38px; font-weight:800; color:var(--red); }
   .overlay h2 { font-size:38px; margin:18px 0 6px; font-weight:800; }
   .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
@@ -83,6 +81,21 @@
   .prow span { color:var(--soft); font-size:12.5px; white-space:nowrap; }
   #aSearch { margin:0 0 12px; }
   .noRes { color:var(--soft); font-size:13px; padding:10px 4px; display:none; }
+  .modalx { position:absolute; top:8px; right:10px; border:0; background:none; font-size:20px; font-weight:400;
+    color:#888; cursor:pointer; padding:2px 8px; line-height:1.2; }
+  .modalx:active { color:#333; }
+  #share .box, .picker .pbox { position:relative; }
+  .gearbtn { margin-left:auto; }
+  .warn { font-size:72px; line-height:1; margin:14px auto 0; }
+  #addOwn { display:block; width:100%; margin-top:12px; border-style:dashed; padding:16px 10px; font-size:16px; }
+  #cutom { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 4px; }
+  #cutom .mine { display:flex; align-items:center; gap:6px; background:#f6eeee;
+    border:1px solid var(--line); border-radius:999px; padding:6px 4px 6px 12px; max-width:100%; }
+  #cutom .mine span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #cutom .mine button { padding:2px 9px; font-size:14px; line-height:1.2; border:0; background:none; cursor:pointer; color:#888; }
+  #emoGrid { display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  #emoGrid .emopick { font-size:22px; padding:6px 9px; border:1px solid var(--line); border-radius:10px; background:#fff; cursor:pointer; }
+  #emoGrid .emopick.on { background:#fff0f0; border-color:var(--red); }
 </style>
 </head>
 <body>
@@ -114,15 +127,16 @@
 
 <main>
   <div class="row">
-    <label id="langLabel">Language:</label>
+    <label id="langLabel">Waiter's language:</label>
     <button class="linkbtn" id="langBtn" type="button">English ▾</button>
-    <button class="linkbtn" id="uiBtn" type="button">App: English</button>
     <button class="linkbtn" id="shareQr">Show QR</button>
     <button class="linkbtn" id="shareCopy">Copy link</button>
+    <button class="linkbtn gearbtn" id="settingsBtn" type="button" aria-label="Settings" title="Settings">⚙️</button>
   </div>
   <input id="aSearch" class="search" type="search" placeholder="Search allergens…" autocomplete="off" aria-label="search allergens">
   <div class="noRes" id="noRes">No matches. Try another spelling.</div>
   <div id="grid" class="grid"></div>
+  <button id="addOwn" class="linkbtn" type="button">Add your own +</button>
 </main>
 
 <div id="showBtn">
@@ -134,7 +148,7 @@
   <button class="close" id="cardClose" aria-label="close">✕</button>
   <div class="inner">
     <button class="linkbtn" id="cardLangBtn" type="button" style="margin-top:4px;">English ▾</button>
-    <div class="tri"><span>!</span></div>
+    <div class="warn">⚠️</div>
     <h2>ALLERGY ALERT</h2>
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
@@ -145,21 +159,35 @@
 
 <div id="share">
   <div class="box">
+    <button class="modalx" id="shareX" type="button" aria-label="close">X</button>
     <h3 id="shareH3">Share this allergy card</h3>
     <p style="margin:4px 0 0;" id="shareP">This QR code and link carry the full profile: allergens and language.</p>
+    <p id="shareCustomNote" style="margin:6px 0 0;display:none;color:#666;font-size:13px;">Your own entries ride along exactly as typed.</p>
     <div id="shareQrImg" style="margin:12px 0;"></div>
     <div class="url" id="shareUrl"></div>
     <button class="linkbtn" id="shareCopyBtn">Copy link</button>
-    <button class="linkbtn" id="shareClose" style="margin-left:6px;">Close</button>
   </div>
 </div>
 
 <div id="picker" class="picker">
   <div class="pbox">
+    <button class="modalx" id="pickerX" type="button" aria-label="close">X</button>
     <div style="font-weight:700;margin-bottom:8px;" id="pickerTitle">Choose a language</div>
     <input id="pickerSearch" class="search" type="search" placeholder="Search languages…" autocomplete="off" aria-label="search languages">
     <div class="prows" id="pickerRows"></div>
-    <div style="text-align:right;margin-top:8px"><button class="linkbtn" id="pickerCancel" type="button">Close</button></div>
+  </div>
+</div>
+
+<div id="dlg" class="picker">
+  <div class="pbox">
+    <button class="modalx" id="dlgX" type="button" aria-label="close">X</button>
+    <div style="font-weight:700;" id="dlgTitle">Add</div>
+    <div style="color:#666;font-size:13px;margin:2px 0 8px;" id="dlgSub">Add a custom restriction</div>
+    <div id="cutom"></div>
+    <input id="nm" type="text" maxlength="60" style="width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;" placeholder="Name it exactly as you'd say it">
+    <div id="emoLbl" style="color:#666;font-size:13px;margin:10px 0 4px;">Pick an emoji</div>
+    <div id="emoGrid"></div>
+    <div style="text-align:right;margin-top:8px"><button class="linkbtn" id="dlgSave" type="button">Save</button></div>
   </div>
 </div>
 
@@ -208,12 +236,41 @@ const ALLERGENS = [
   {id:"shellfish",emoji:"🦐",dishes:["Shrimp scampi","Crab rangoon","Lobster bisque","Shrimp paste curries"],watch:"Shrimp paste (belacan / kapi / mắm tôm) hides in many Southeast Asian curries and dips. Shared fryers are risky too.",names:{en:"shellfish & crustaceans",fr:"crustacés et mollusques",es:"mariscos",it:"crostacei e molluschi",de:"Schalentiere",pt:"mariscos",ja:"甲殻類・貝類",zh:"贝类 / 甲壳类",ko:"갑각류·조개류",th:"อาหารทะเล (กุ้ง ปู หอย)",vi:"hải sản có vỏ",ar:"ثمار البحر القشرية"}},
   {id:"sesame",emoji:"🌱",dishes:["Hummus / tahini","Sesame buns","Goma-ae spinach","Halva"],watch:"Sesame oil is heavily used in East Asian kitchens. Sesame seeds cover most burger buns.",names:{en:"sesame",fr:"sésame",es:"sésamo / ajonjolí",it:"sesamo",de:"Sesam",pt:"gergelim",ja:"ごま",zh:"芝麻",ko:"참깨",th:"งา",vi:"mè / vừng",ar:"سمسم"}},
   {id:"mustard",emoji:"🟡",dishes:["Dijon vinaigrette","Deli sausages","Curry pastes","Pickled dishes"],watch:"Mustard seed powder sneaks into sauces, sausages, pickles, and many prepared foods.",names:{en:"mustard",fr:"moutarde",es:"mostaza",it:"senape",de:"Senf",pt:"mostarda",ja:"マスタード・からし",zh:"芥末",ko:"겨자",th:"มัสตาร์ด",vi:"mù tạt",ar:"خردل"}},
-  {id:"celery",emoji:"🥬",dishes:["Vegetable stocks & soups","Waldorf salad","Seasoning mixes","Bouillon cubes"],watch:"Celery is a base of most stocks and bouillons across Europe, plus spice mixes. It is rarely listed on the plate.",names:{en:"celery",fr:"céleri",es:"apio",it:"sedano",de:"Sellerie",pt:"aipo",ja:"セロリ",zh:"芹菜",ko:"셀러리",th:"ขึ้นฉ่าย",vi:"cần tây",ar:"كرفس"}},
   {id:"sulfites",emoji:"🍷",dishes:["Wine & beer","Dried fruit","Shrimp cocktail","French fries (frozen)"],watch:"Used as a preservative in wine, dried fruit, some processed shrimp, and some frozen potatoes.",names:{en:"sulfites",fr:"sulfites",es:"sulfitos",it:"solfiti",de:"Sulfite",pt:"sulfitos",ja:"亜硫酸塩",zh:"亚硫酸盐",ko:"아황산염",th:"ซัลไฟต์",vi:"sunfit",ar:"كبريتيت"}},
-  {id:"lupin",emoji:"🌼",dishes:["Lupin beans","Gluten-free pastas","Some biscuits","Lupin-flour bread"],watch:"Lupin flour is increasingly used in gluten-free and protein-enriched baked goods.",names:{en:"lupin",fr:"lupin",es:"altramces / lupino",it:"lupini",de:"Lupinen",pt:"tremoços",ja:"ルピナス",zh:"羽扇豆",ko:"루핀",th:"ถั่วลูพิน",vi:"đậu lupin",ar:"لوبين"}},
 ];
 const BY_ID = {};
 ALLERGENS.forEach(a => BY_ID[a.id] = a);
+
+// the unavoidable "other": free-text dietary restrictions (religious rules,
+// rare intolerances...) that translation can't know. They ride along in the
+// same selection and in the share URL's custom params, exactly as typed.
+const CUSTOM_DEFS = loadCustom();
+function loadCustom() {
+  try { const v = JSON.parse(localStorage.getItem("allergy_card_custom"));
+    if (Array.isArray(v)) return v.filter(e => e && typeof e.id === "string" && typeof e.name === "string" && typeof e.emoji === "string"); } catch (_) {}
+  return [];
+}
+function saveCustom() { localStorage.setItem("allergy_card_custom", JSON.stringify(CUSTOM_DEFS)); }
+function customById(id){ return CUSTOM_DEFS.find(d => "c:" + d.id === id || d.id === id) || null; }
+const EMOJIS = ["🍽️","🥦","🌶️","🧀","🍞","🥩","🍗","🦐","🥚","🥛","🍫","🍓","🥕","🫘","🌾","🍯","🧂","🍄","🥥","🍅"];
+// share cells: packed once as "emoji~name" per repetition of the c param, so
+// commas, ampersands, and tildes in names stay safe through URL encoding
+function trimCell(s, n){ return [...s].slice(0, n).join(""); }
+function exportCell(d){ return trimCell(d.emoji, 8) + "~" + trimCell(d.name, 60); }
+function applyCell(prm){
+  const t = prm.indexOf("~");
+  if (t < 0) return;
+  const emoji = trimCell(prm.slice(0, t), 8).trim();
+  const name = trimCell(prm.slice(t + 1), 60).replace(/^[ \t~]+/, "").trim();
+  if (!name) return;
+  let d = CUSTOM_DEFS.find(e => e.name === name);
+  if (!d) {
+    d = { id: "u" + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36), name, emoji: emoji || "🍽️" };
+    CUSTOM_DEFS.push(d);
+    saveCustom();
+  }
+  state.selected["c:" + d.id] = true;
+}
 
 // --- 300-language support ------------------------------------------------
 // docs/languages.json.js carries {c, n, t} (code, English name, native name)
@@ -238,7 +295,7 @@ const UILIST = [
  "Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.",
  "GET STARTED",
  "Your choices are saved in this browser only. Nothing is sent anywhere.",
- "Language:",
+ "Waiter's language:",
  "Show QR",
  "Copy link",
  "SHOW THE WAITER CARD",
@@ -253,10 +310,18 @@ const UILIST = [
  "Scan to open this card on your phone",
  "Share this allergy card",
  "This QR code and link carry the full profile: allergens and language.",
- "Close",
  "Choose your language",
  "Search languages…",
  "Search allergens…",
+ "Add your own +",
+ "Add a custom restriction",
+ "Name it exactly as you'd say it",
+ "Pick an emoji",
+ "Save",
+ "Add",
+ "Edit",
+ "Remove",
+ "App",
 ];
 const U_ROW = UILIST.length;
 const packFails = {};
@@ -296,13 +361,19 @@ function watchText(a, lang){
 
 function loadSelected(){
   // migrate profiles saved by the removed severity feature: keep the allergies, drop the levels
+  // also quietly drop allergens that no longer exist (celery, lupin, deleted customs)
+  const keep = s => {
+    const out = {};
+    Object.keys(s || {}).forEach(id => { if (BY_ID[id] || customById(id)) out[id] = true; });
+    return out;
+  };
   try {
     const fresh = JSON.parse(localStorage.getItem("allergy_card_selected") || "null");
-    if (fresh) return fresh;
+    if (fresh) return keep(fresh);
     const old = JSON.parse(localStorage.getItem("allergy_card_levels") || "{}");
     const sel = {};
     Object.keys(old).forEach(id => { sel[id] = true; });
-    return sel;
+    return keep(sel);
   } catch(e){ return {}; }
 }
 const state = {
@@ -323,16 +394,15 @@ if (demo) {
   const demoSel = {peanuts:true,shellfish:true,sesame:true};
   if (demo === "select") { state.selected = Object.assign({}, demoSel); state.lang = "en"; }
   if (demo === "card-ja") { state.selected = Object.assign({}, demoSel); state.lang = "ja"; }
-} else if (params.get("a")) {
+} else if (params.get("a") !== null || params.get("c") !== null) {
   const sel = {};
-  params.get("a").split(",").forEach(part => {
+  (params.get("a") || "").split(",").forEach(part => {
     const id = part.split(":")[0];   // tolerate legacy "id:level" format
     if (BY_ID[id]) sel[id] = true;
   });
-  if (Object.keys(sel).length) {
-    state.selected = sel;
-    state.fromShare = true;
-  }
+  state.selected = sel;
+  params.getAll("c").forEach(cell => applyCell(cell));
+  if (Object.keys(state.selected).length) state.fromShare = true;
   const lg = params.get("lang");
   if (lg) state.lang = String(lg).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 12) || "en";
 }
@@ -346,10 +416,14 @@ function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/
 // at the public URL so a kitchen's phone can open them.
 const CANONICAL_BASE = "https://payne911.github.io/allergy-card/";
 function profileUrl(){
-  const slug = Object.keys(state.selected).sort().join(",");
+  const slug = Object.keys(state.selected).filter(id => BY_ID[id]).sort().join(",");
   const base = location.protocol.startsWith("http") ? location.href.split("?")[0] : CANONICAL_BASE;
   const u = new URL(base);
-  u.search = "?a=" + slug + "&lang=" + state.lang;
+  let q = "?a=" + slug + "&lang=" + state.lang;
+  CUSTOM_DEFS.filter(d => state.selected["c:" + d.id]).forEach(d => {
+    q += "&c=" + encodeURIComponent(exportCell(d));
+  });
+  u.search = q;
   return u.toString();
 }
 function qrImg(url, cell){
@@ -373,10 +447,45 @@ function copyLink(){
   }
 }
 
+// dialog manager: every open overlay pushes a tagged history entry, so the
+// Android/browser back button closes the topmost dialog instead of leaving.
+// popstate unwinds the stack until it matches the entry we landed on, closing
+// exactly what was popped; X buttons close + drop the entry when it's on top.
+let dlgSeq = 0;
+const dlgStack = [];
+function histRemove(id){
+  document.getElementById(id).classList.remove("open");
+  if (id === "picker") pickerCb = null;
+}
+function openDlg(id){
+  if (document.getElementById(id).classList.contains("open")) return;
+  document.getElementById(id).classList.add("open");
+  dlgStack.push({ dlg: id, t: ++dlgSeq });
+  try { history.pushState(dlgStack[dlgStack.length - 1], "", location.href); } catch (e) { dlgStack.pop(); }
+}
+function closeDlg(id){
+  if (!document.getElementById(id).classList.contains("open")) return;
+  histRemove(id);
+  const wasTop = dlgStack.length && dlgStack[dlgStack.length - 1].dlg === id;
+  const i = dlgStack.map(t => t.dlg).lastIndexOf(id);
+  if (i > -1) dlgStack.splice(i, 1);
+  if (wasTop) history.back(); // drop its entry so back never hits a ghost
+}
+window.addEventListener("popstate", e => {
+  while (dlgStack.length) {
+    const top = dlgStack[dlgStack.length - 1];
+    if (e.state && e.state.dlg === top.dlg && e.state.t === top.t) break;
+    dlgStack.pop();
+    histRemove(top.dlg);
+  }
+});
+history.replaceState(null, "", location.href);
+
 let pickerCb = null;
-function openPicker(cb){
+function openPicker(cb, title){
   pickerCb = cb;
-  document.getElementById("picker").classList.add("open");
+  document.getElementById("pickerTitle").textContent = title || T("Choose your language");
+  openDlg("picker");
   document.getElementById("pickerSearch").value = "";
   document.getElementById("pickerSearch").placeholder = T("Search languages…");
   renderPickerRows("");
@@ -391,26 +500,24 @@ function renderPickerRows(q){
   rows.querySelectorAll(".prow").forEach(r => r.addEventListener("click", () => {
     const cb = pickerCb;
     pickerCb = null;
-    document.getElementById("picker").classList.remove("open");
+    closeDlg("picker");
     if (cb) cb(r.dataset.c);
   }));
 }
 function syncLangButtons(){
   document.getElementById("langBtn").textContent = langName(state.lang) + " ▾";
   document.getElementById("cardLangBtn").textContent = langName(state.lang) + " ▾";
-  document.getElementById("uiBtn").textContent = "App: " + langName(state.ui || "en");
 }
 function applyUIText(){
   document.querySelector("header p").textContent = T("Tap the allergens you're allergic to. Works offline.");
-  document.getElementById("langLabel").textContent = T("Language:");
+  document.getElementById("langLabel").textContent = T("Waiter's language:");
   document.getElementById("shareQr").textContent = T("Show QR");
   document.getElementById("shareCopy").textContent = T("Copy link");
   document.getElementById("aSearch").placeholder = T("Search allergens…");
   document.getElementById("shareH3").textContent = T("Share this allergy card");
   document.getElementById("shareP").textContent = T("This QR code and link carry the full profile: allergens and language.");
   document.getElementById("shareCopyBtn").textContent = T("Copy link");
-  document.getElementById("shareClose").textContent = T("Close");
-  document.getElementById("pickerCancel").textContent = T("Close");
+  document.getElementById("addOwn").textContent = T("Add your own +");
   renderButton();
 }
 function setLang(v){
@@ -438,8 +545,20 @@ function renderGrid(){
     if (!needle) return true;
     return (name(a, uil) + " " + a.names.en + " " + a.id).toLowerCase().includes(needle);
   });
-  document.getElementById("noRes").style.display = list.length ? "none" : "block";
-  grid.innerHTML = list.map(a => {
+  const custs = CUSTOM_DEFS.filter(d => !needle || d.name.toLowerCase().includes(needle));
+  document.getElementById("noRes").style.display = (list.length || custs.length) ? "none" : "block";
+  grid.innerHTML = custs.map(d => {
+    const on = !!state.selected["c:" + d.id];
+    return `<div class="allergen ${on?"selected":""}" data-id="c:${esc(d.id)}">
+      <div class="thumb">${d.emoji}</div>
+      <div class="body">
+        <div class="top">
+          <div><div class="name">${esc(d.name)}</div></div>
+          <div class="check">✓</div>
+        </div>
+      </div>
+    </div>`;
+  }).join("") + list.map(a => {
     const on = !!state.selected[a.id], exp = state.expanded.has(a.id);
     return `<div class="allergen ${on?"selected":""}" data-id="${a.id}">
       <div class="thumb">${a.emoji}</div>
@@ -487,6 +606,7 @@ function openCard(){
   document.getElementById("phrase").textContent = (p && p.ui && p.ui[23]) || PHRASES[state.lang] || PHRASES.en;
   document.getElementById("phraseEn").textContent = state.lang==="en" ? "" : PHRASES.en;
   const sel = ALLERGENS.filter(a => state.selected[a.id]);
+  const custs = CUSTOM_DEFS.filter(d => state.selected["c:" + d.id]);
   document.getElementById("cardList").innerHTML = sel.map(a => `
     <div class="acard">
       <div class="e">${a.emoji}</div>
@@ -494,34 +614,118 @@ function openCard(){
         <div class="nm"><span class="n">${esc(name(a,state.lang))}</span>
         ${state.lang!=="en" ? `<span class="en">${esc(a.names.en)}</span>` : ""}</div>
       </div>
+    </div>`).join("") + custs.map(d => `
+    <div class="acard">
+      <div class="e">${d.emoji}</div>
+      <div class="cbody">
+        <div class="nm"><span class="n">${esc(d.name)}</span></div>
+      </div>
     </div>`).join("");
   const url = profileUrl();
   document.getElementById("cardQr").innerHTML = qrImg(url, 3);
   document.getElementById("cardQrCap").textContent = (p && p.ui && p.ui[25]) || SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
   document.getElementById("card").setAttribute("dir", RTL.has(state.lang) ? "rtl" : "ltr");
-  document.getElementById("card").classList.add("open");
+  openDlg("card");
   });
 }
 function openShare(){
   const url = profileUrl();
   document.getElementById("shareQrImg").innerHTML = qrImg(url, 5);
   document.getElementById("shareUrl").textContent = url;
-  document.getElementById("share").classList.add("open");
+  const hasCustom = CUSTOM_DEFS.some(d => state.selected["c:" + d.id]);
+  document.getElementById("shareCustomNote").style.display = hasCustom ? "block" : "none";
+  openDlg("share");
 }
 
-document.getElementById("cardClose").addEventListener("click", ()=>document.getElementById("card").classList.remove("open"));
+// --- custom-restriction dialog -------------------------------------------
+let dlgEdit = null;
+function openAddDlg(edit){
+  dlgEdit = edit || null;
+  document.getElementById("dlgTitle").textContent = T(edit ? "Edit" : "Add");
+  document.getElementById("dlgSub").textContent = T("Add a custom restriction");
+  const nm = document.getElementById("nm");
+  nm.value = edit ? edit.name : "";
+  nm.placeholder = T("Name it exactly as you'd say it");
+  let cur = edit ? edit.emoji : "🍽️";
+  const grid = document.getElementById("emoGrid");
+  grid.innerHTML = "";
+  document.getElementById("emoLbl").textContent = T("Pick an emoji");
+  EMOJIS.forEach(e => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "emopick"; b.textContent = e;
+    if (e === cur) b.classList.add("on");
+    b.addEventListener("click", () => {
+      cur = e;
+      grid.querySelectorAll(".emopick").forEach(x => x.classList.remove("on"));
+      b.classList.add("on");
+    });
+    grid.appendChild(b);
+  });
+  const mine = document.getElementById("cutom");
+  mine.innerHTML = "";
+  CUSTOM_DEFS.forEach(d => {
+    const chip = document.createElement("span");
+    chip.className = "mine";
+    const lbl = document.createElement("span");
+    lbl.textContent = d.emoji + " " + d.name;
+    const rm = document.createElement("button");
+    rm.type = "button"; rm.textContent = "X"; rm.title = T("Remove");
+    rm.addEventListener("click", () => {
+      const i = CUSTOM_DEFS.indexOf(d);
+      CUSTOM_DEFS.splice(i, 1);
+      delete state.selected["c:" + d.id];
+      saveCustom(); save();
+      if (dlgEdit === d) closeDlg("dlg");
+      else openAddDlg(dlgEdit);
+      renderGrid(); renderButton();
+    });
+    chip.appendChild(lbl); chip.appendChild(rm);
+    lbl.style.cursor = "pointer";
+    lbl.addEventListener("click", () => openAddDlg(d));
+    mine.appendChild(chip);
+  });
+  document.getElementById("dlgSave").textContent = T("Save");
+  openDlg("dlg");
+  setTimeout(() => nm.focus(), 50);
+}
+document.getElementById("dlgSave").addEventListener("click", () => {
+  const nm = document.getElementById("nm");
+  const txt = nm.value.trim();
+  if (!txt) { nm.focus(); return; }
+  const on = document.querySelector("#emoGrid .emopick.on");
+  const emoji = on ? on.textContent : "🍽️";
+  if (dlgEdit) {
+    dlgEdit.name = trimCell(txt, 60);
+    dlgEdit.emoji = emoji;
+  } else {
+    const d = { id: "u" + Date.now().toString(36) + Math.floor(Math.random()*1296).toString(36),
+                name: trimCell(txt, 60), emoji };
+    CUSTOM_DEFS.push(d);
+    state.selected["c:" + d.id] = true;
+  }
+  saveCustom(); save();
+  closeDlg("dlg");
+  renderGrid(); renderButton();
+  if (document.getElementById("card").classList.contains("open")) openCard();
+});
+
+document.getElementById("cardClose").addEventListener("click", () => closeDlg("card"));
 document.getElementById("cardBtn").addEventListener("click", openCard);
 document.getElementById("shareQr").addEventListener("click", openShare);
 document.getElementById("shareCopy").addEventListener("click", copyLink);
 document.getElementById("shareCopyBtn").addEventListener("click", copyLink);
-document.getElementById("shareClose").addEventListener("click", ()=>document.getElementById("share").classList.remove("open"));
+document.getElementById("shareX").addEventListener("click", () => closeDlg("share"));
+document.getElementById("settingsBtn").addEventListener("click", () => openPicker(setUI, T("App")));
+document.getElementById("addOwn").addEventListener("click", () => openAddDlg(null));
+document.getElementById("dlgX").addEventListener("click", () => closeDlg("dlg"));
 
-document.getElementById("langBtn").addEventListener("click", () => openPicker(setLang));
-document.getElementById("cardLangBtn").addEventListener("click", () => openPicker(setLang));
-document.getElementById("uiBtn").addEventListener("click", () => openPicker(setUI));
+document.getElementById("langBtn").addEventListener("click", () => openPicker(setLang, T("Waiter's language:")));
+document.getElementById("cardLangBtn").addEventListener("click", () => openPicker(setLang, T("Waiter's language:")));
+document.getElementById("pickerX").addEventListener("click", () => { pickerCb = null; closeDlg("picker"); });
 document.getElementById("pickerSearch").addEventListener("input", e => renderPickerRows(e.target.value));
-document.getElementById("pickerCancel").addEventListener("click", () => { pickerCb = null; document.getElementById("picker").classList.remove("open"); });
-document.getElementById("picker").addEventListener("click", e => { if (e.target.id === "picker") { pickerCb = null; e.target.classList.remove("open"); } });
+document.getElementById("picker").addEventListener("click", e => { if (e.target.id === "picker") { pickerCb = null; closeDlg("picker"); } });
+document.getElementById("share").addEventListener("click", e => { if (e.target.id === "share") closeDlg("share"); });
+document.getElementById("dlg").addEventListener("click", e => { if (e.target.id === "dlg") closeDlg("dlg"); });
 document.getElementById("aSearch").addEventListener("input", e => { state.filter = e.target.value; renderGrid(); });
 
 // onboarding: first visit only (skipped when arriving through a shared-card link)
