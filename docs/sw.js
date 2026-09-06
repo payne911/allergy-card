@@ -1,5 +1,5 @@
-const CACHE = "allergy-card-v2";
-const FILES = ["./", "./index.html", "./manifest.webmanifest"];
+const CACHE = "allergy-card-v3";
+const FILES = ["./", "./index.html", "./manifest.webmanifest", "./qr.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

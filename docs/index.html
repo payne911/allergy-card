@@ -4,29 +4,37 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Allergy Card — show the waiter, in their language</title>
-<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card — in their language. Works offline, stores nothing but your own choices on your own device.">
+<meta name="description" content="Pick your allergens and how serious each one is, pick a language, and show the waiter a big red card with photos — in their language. Everything lives in a shareable link and QR code. Works offline.">
 <style>
-  :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff8f8; --sel:#ffe4e4; --line:#e0dada; }
+  :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff; --sel:#fff0f0; --line:#e0dada; }
   * { box-sizing:border-box; }
-  body { margin:0; font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif; color:var(--ink); background:#fff; padding-bottom:120px; }
+  body { margin:0; font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif; color:var(--ink); background:#f7f4f4; padding-bottom:120px; }
   header { position:sticky; top:0; background:var(--red); color:#fff; padding:14px 16px; z-index:5; }
-  header h1 { margin:0; font-size:20px; display:flex; align-items:center; gap:8px; }
+  header h1 { margin:0; font-size:20px; }
   header p { margin:2px 0 0; font-size:13px; opacity:.92; }
   main { max-width:860px; margin:0 auto; padding:16px; }
   .row { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
   select { font-size:16px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:10px; }
-  .allergen { border:1px solid var(--line); border-radius:14px; background:var(--card); padding:12px; cursor:pointer; user-select:none; }
-  .allergen.selected { background:var(--sel); border-color:var(--red); }
-  .allergen .top { display:flex; align-items:center; gap:10px; }
-  .allergen .emoji { font-size:28px; }
-  .allergen .name { font-weight:700; font-size:17px; }
+  .linkbtn { font-size:15px; padding:10px 14px; border:1px solid var(--line); border-radius:12px; background:#fff; color:var(--ink); cursor:pointer; }
+  .linkbtn:active { background:#eee; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px; }
+  .allergen { border:1px solid var(--line); border-radius:14px; background:var(--card); cursor:pointer; user-select:none; overflow:hidden; }
+  .allergen.selected { border-color:var(--red); border-width:2px; margin:-1px; }
+  .allergen .thumb { width:100%; height:110px; object-fit:cover; display:block; }
+  .allergen .body { padding:10px 12px; }
+  .allergen .top { display:flex; align-items:center; gap:8px; }
+  .allergen .name { font-weight:700; font-size:16px; }
   .allergen .en { font-size:12.5px; color:var(--soft); }
   .allergen .check { margin-left:auto; color:var(--red); font-weight:700; font-size:20px; visibility:hidden; }
   .allergen.selected .check { visibility:visible; }
+  .pills { display:flex; gap:6px; margin-top:8px; display:none; }
+  .allergen.selected .pills { display:flex; }
+  .pill { flex:1; font-size:12px; font-weight:600; padding:6px 4px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); cursor:pointer; text-align:center; }
+  .pill.on1 { background:#B08000; border-color:#B08000; color:#fff; }
+  .pill.on2 { background:#B26A00; border-color:#B26A00; color:#fff; }
+  .pill.on3 { background:#000; border-color:#000; color:#fff; }
   .allergen .more { margin-top:8px; padding:0; border:0; background:none; color:#888; font-size:13px; cursor:pointer; text-decoration:underline; }
   .allergen .dishes { margin-top:8px; font-size:13.5px; }
-  .allergen .dishes b { font-size:13px; }
   .allergen .watch { color:var(--soft); font-size:12.5px; margin-top:4px; }
   #showBtn { position:fixed; left:0; right:0; bottom:0; padding:16px; background:#fff; border-top:1px solid var(--line); }
   #showBtn button { display:block; width:min(560px,100%); margin:0 auto; height:56px; border:0; border-radius:28px; background:var(--red); color:#fff; font-size:18px; font-weight:700; cursor:pointer; }
@@ -37,24 +45,45 @@
   .overlay .close { position:fixed; top:10px; right:14px; font-size:34px; color:#fff; background:none; border:0; cursor:pointer; }
   .overlay .inner { max-width:640px; margin:0 auto; text-align:center; }
   .overlay select { margin:0 auto 10px; display:block; }
-  .overlay .warn { font-size:64px; margin-top:14px; }
-  .overlay h2 { font-size:38px; margin:6px 0 12px; font-weight:800; }
-  .overlay .phrase { font-size:22px; font-weight:500; }
+  .tri { width:0; height:0; border-left:34px solid transparent; border-right:34px solid transparent; border-bottom:58px solid #fff; margin:14px auto 0; position:relative; }
+  .tri span { position:absolute; left:-9px; top:16px; font-size:38px; font-weight:800; color:var(--red); }
+  .overlay h2 { font-size:38px; margin:18px 0 6px; font-weight:800; }
+  .overlay .deadly { font-size:20px; font-weight:700; background:#000; color:#fff; border-radius:10px; padding:10px 14px; margin:10px 0; display:none; }
+  .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
-  .overlay ul { list-style:none; padding:0; margin:24px 0 0; text-align:left; }
-  .overlay li { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,.35); }
-  .overlay li .e { font-size:42px; }
-  .overlay li .n { font-size:30px; font-weight:700; }
-  .overlay li .s { font-size:15px; color:#ffd6d6; }
+  .acard { background:#fff; color:var(--ink); border-radius:16px; overflow:hidden; margin:16px 0; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
+  .acard .imwrap { position:relative; }
+  .acard .strip { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; }
+  .acard .strip::-webkit-scrollbar { display:none; }
+  .acard .strip img { flex:0 0 100%; width:100%; height:200px; object-fit:cover; scroll-snap-align:center; display:block; border:0; }
+  .dots { position:absolute; bottom:10px; left:0; right:0; display:flex; gap:7px; justify-content:center; pointer-events:none; }
+  .dot { width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.55); box-shadow:0 0 4px rgba(0,0,0,.5); }
+  .dot.on { background:#fff; }
+  .acard .cbody { padding:12px 14px 14px; }
+  .acard .nm { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .acard .nm .n { font-size:26px; font-weight:800; }
+  .acard .nm .en { font-size:14px; color:var(--soft); }
+  .sev { display:inline-block; margin-top:8px; font-size:14px; font-weight:800; letter-spacing:.06em; padding:5px 12px; border-radius:14px; color:#fff; }
+  .sev1 { background:#8A6D00; }
+  .sev2 { background:#B26A00; }
+  .sev3 { background:#000; }
+  .cardqr { margin:22px auto 6px; background:#fff; border-radius:14px; padding:12px; width:max-content; }
+  .cardqr .cap { color:var(--ink); font-size:12.5px; text-align:center; padding-top:6px; max-width:220px; }
+  /* share modal */
+  #share { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:15; display:none; align-items:center; justify-content:center; padding:20px; }
+  #share.open { display:flex; }
+  #share .box { background:#fff; color:var(--ink); border-radius:16px; padding:20px; max-width:420px; width:100%; text-align:center; max-height:90vh; overflow-y:auto; }
+  #share .box h3 { margin:0 0 6px; }
+  #share .url { font-size:12px; color:var(--soft); word-break:break-all; background:#f2eeee; border-radius:8px; padding:8px; margin:10px 0; }
+  #share button:active { background:#ddd; }
   /* onboarding */
   #onboard { position:fixed; inset:0; background:#fff; z-index:20; overflow-y:auto; display:none; }
   #onboard.open { display:block; }
   #onboard .inner { max-width:560px; margin:0 auto; padding:40px 24px; text-align:center; }
-  #onboard .warn { font-size:72px; }
   #onboard h1 { color:var(--red); font-size:32px; margin:6px 0; }
   #onboard p.sub { color:var(--ink); }
   .step { display:flex; gap:14px; align-items:center; text-align:left; margin:14px 0; }
-  .step .e { font-size:34px; }
+  .step .num { flex:0 0 40px; width:40px; height:40px; border-radius:50%; background:var(--red); color:#fff; font-weight:800; font-size:20px; display:flex; align-items:center; justify-content:center; }
   .step b { display:block; }
   .step span { color:var(--soft); font-size:14px; }
   #onboard button { width:100%; height:56px; border:0; border-radius:28px; background:var(--red); color:#fff; font-size:18px; font-weight:700; cursor:pointer; margin-top:18px; }
@@ -65,27 +94,28 @@
 
 <div id="onboard">
   <div class="inner">
-    <div class="warn">⚠️</div>
     <h1>Allergy Card</h1>
-    <p class="sub">Show any waiter what you can't eat — in their language.</p>
-    <div class="step"><div class="e">🎯</div><div><b>1. Pick your allergens</b><span>Tap everything you're allergic to. Selecting one shows the dishes that usually hide it.</span></div></div>
-    <div class="step"><div class="e">🌐</div><div><b>2. Choose the local language</b><span>French in Montréal, Japanese in Tokyo, Thai in Bangkok — the allergen names follow automatically.</span></div></div>
-    <div class="step"><div class="e">🚨</div><div><b>3. Show the red card</b><span>One tap on the big red button gives the waiter a full-screen card they can't miss.</span></div></div>
-    <div class="step"><div class="e">✈️</div><div><b>4. Works fully offline</b><span>Save this page before you fly. No account, no internet needed at the table.</span></div></div>
+    <p class="sub">Show any waiter what you can't eat, with photos, in their language.</p>
+    <div class="step"><div class="num">1</div><div><b>Pick your allergens</b><span>Tap everything you're allergic to, then set how serious each one is: makes you ill, can't eat, or deadly.</span></div></div>
+    <div class="step"><div class="num">2</div><div><b>Choose the local language</b><span>French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
+    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with photos, severity levels, and a QR they can scan.</span></div></div>
+    <div class="step"><div class="num">4</div><div><b>Share by link or QR</b><span>Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
     <button id="onboardGo">GET STARTED</button>
     <p class="fine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
   </div>
 </div>
 
 <header>
-  <h1>⚠️ Allergy Card</h1>
-  <p>Tap the allergens you're allergic to — picking one shows the dishes that usually contain it. Works offline.</p>
+  <h1>Allergy Card</h1>
+  <p>Tap the allergens you're allergic to and set how serious each one is. Works offline.</p>
 </header>
 
 <main>
   <div class="row">
-    <label for="langSel">🌐 Language:</label>
+    <label for="langSel">Language:</label>
     <select id="langSel"></select>
+    <button class="linkbtn" id="shareQr">Show QR</button>
+    <button class="linkbtn" id="shareCopy">Copy link</button>
   </div>
   <div id="grid" class="grid"></div>
 </main>
@@ -99,14 +129,28 @@
   <button class="close" id="cardClose" aria-label="close">✕</button>
   <div class="inner">
     <div class="row" style="justify-content:center;"><select id="cardLangSel"></select></div>
-    <div class="warn">⚠️</div>
+    <div class="tri"><span>!</span></div>
     <h2>ALLERGY ALERT</h2>
+    <div class="deadly" id="deadlyBanner"></div>
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
-    <ul id="cardList"></ul>
+    <div id="cardList"></div>
+    <div class="cardqr"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div></div>
   </div>
 </div>
 
+<div id="share">
+  <div class="box">
+    <h3>Share this allergy card</h3>
+    <p style="margin:4px 0 0;">This QR code and link carry the full profile: allergens, levels, and language.</p>
+    <div id="shareQrImg" style="margin:12px 0;"></div>
+    <div class="url" id="shareUrl"></div>
+    <button class="linkbtn" id="shareCopyBtn">Copy link</button>
+    <button class="linkbtn" id="shareClose" style="margin-left:6px;">Close</button>
+  </div>
+</div>
+
+<script src="qr.js"></script>
 <script>
 const LANGUAGES = [
   {code:"en", label:"English", native:"English"},
@@ -122,6 +166,8 @@ const LANGUAGES = [
   {code:"vi", label:"Vietnamese", native:"Tiếng Việt"},
   {code:"ar", label:"Arabic", native:"العربية"},
 ];
+const LANG_CODES = {};
+LANGUAGES.forEach(l => LANG_CODES[l.code] = true);
 const PHRASES = {
   en:"I am allergic to these foods. Please do not put them in my meal.",
   fr:"Je suis allergique à ces aliments. Merci de les exclure de mon repas.",
@@ -136,43 +182,126 @@ const PHRASES = {
   vi:"Tôi bị dị ứng với những thức ăn này. Vui lòng không cho vào món ăn của tôi.",
   ar:"لدي حساسية من هذه الأطعمة. يرجى عدم وضعها في وجبتي.",
 };
+// severity badge per level + language
+const SEV = {
+  1:{en:"MAKES ME ILL",fr:"ME REND MALADE",es:"ME HACE DAÑO",it:"MI FA MALE",de:"MACHT MICH KRANK",pt:"FAZ-ME MAL",ja:"具合が悪くなる",zh:"吃了会不舒服",ko:"배탈이 나요",th:"ทำให้ฉันป่วย",vi:"làm tôi bị bệnh",ar:"يمرضني"},
+  2:{en:"CAN'T EAT IT",fr:"JE NE PEUX PAS EN MANGER",es:"NO PUEDO COMERLO",it:"NON POSSO MANGIARLO",de:"KANN ICH NICHT ESSEN",pt:"NÃO POSSO COMÊ-LO",ja:"食べられません",zh:"不能吃",ko:"먹을 수 없어요",th:"กินไม่ได้",vi:"không thể ăn",ar:"لا أستطيع أكله"},
+  3:{en:"DEADLY",fr:"MORTEL",es:"MORTAL",it:"LETALE",de:"TÖDLICH",pt:"MORTAL",ja:"致命的",zh:"致命",ko:"치명적",th:"ถึงตายได้",vi:"chết người",ar:"قاتل"},
+};
+const LEVELS_PILL = {1:"Makes me ill", 2:"Can't eat", 3:"Deadly"};
+// shown on the card when any level-3 allergen is selected
+const DEADLINE = {
+  en:"Even a small amount could kill me. Please make sure my meal has not touched it.",
+  fr:"Même une petite quantité pourrait me tuer. Merci de vérifier que mon repas n'y a pas touché.",
+  es:"Incluso una pequeña cantidad podría matarme. Asegúrese de que mi comida no lo ha tocado.",
+  it:"Anche una piccola quantità potrebbe uccidermi. Si assicuri che il mio pasto non ne sia venuto a contatto.",
+  de:"Schon eine kleine Menge kann tödlich sein. Bitte stellen Sie sicher, dass mein Essen damit nicht in Berührung gekommen ist.",
+  pt:"Mesmo uma pequena quantidade pode ser fatal. Por favor, garanta que a minha refeição não esteve em contacto.",
+  ja:"少量でも命に関わります。私の食事がこれらに触れていないことを確認してください。",
+  zh:"即使微量也可能危及生命。请确保我的餐点完全没有接触。",
+  ko:"조금만 먹어도 생명이 위험합니다. 제 음식이 닿지 않았는지 꼭 확인해 주세요.",
+  th:"แม้เพียงเล็กน้อยอาจถึงชีวิต กรุณาตรวจสอบว่าอาหารของฉันไม่ได้สัมผัส",
+  vi:"Chỉ một lượng nhỏ cũng có thể nguy hiểm đến tính mạng. Xin hãy đảm bảo món ăn của tôi không hề chạm vào.",
+  ar:"حتى كمية صغيرة قد تكون قاتلة. يرجى التأكد من أن وجبتي لم تلامسها أبداً.",
+};
+const SCAN_CAPTION = {
+  en:"Scan to open this card on your phone",
+  fr:"Scanner pour ouvrir cette carte",
+  es:"Escanee para abrir esta tarjeta",
+  it:"Scansiona per aprire questa carta",
+  de:"Scannen, um diese Karte zu öffnen",
+  pt:"Digitalize para abrir este cartão",
+  ja:"スキャンしてこのカードを開く",
+  zh:"扫码打开此卡片",
+  ko:"스캔하면 이 카드가 열립니다",
+  th:"สแกนเพื่อเปิดการ์ดนี้",
+  vi:"Quét để mở thẻ này",
+  ar:"امسح لفتح هذه البطاقة",
+};
 const ALLERGENS = [
-  {id:"peanuts",emoji:"🥜",dishes:["Pad Thai","Satay skewers","Peanut butter cookies","Mole sauce"],watch:"Often hidden in Asian sauces, garnishes, and desserts.",names:{en:"peanuts",fr:"arachides",es:"cacahuetes / maní",it:"arachidi",de:"Erdnüsse",pt:"amendoim",ja:"ピーナッツ",zh:"花生",ko:"땅콩",th:"ถั่วลิสง",vi:"đậu phộng",ar:"فول سوداني"}},
-  {id:"tree_nuts",emoji:"🌰",dishes:["Pesto (pine nuts)","Baklava","Almond croissants","Granola"],watch:"Includes almonds, cashews, walnuts, hazelnuts, pistachios, and pine nuts. Watch nut oils in salads and pastries.",names:{en:"tree nuts",fr:"fruits à coque",es:"frutos secos",it:"frutta a guscio",de:"Nüsse",pt:"frutos de casca rija",ja:"木の実類",zh:"坚果",ko:"견과류",th:"ถั่วเปลือกแข็ง",vi:"các loại hạt",ar:"مكسرات"}},
-  {id:"milk",emoji:"🥛",dishes:["Butter chicken","Mac & cheese","Bechamel lasagna","Crème brûlée"],watch:"Butter, cream, cheese, and ghee count too. Many curries and sauces use cream or butter.",names:{en:"milk / dairy",fr:"lait",es:"leche",it:"latte",de:"Milch",pt:"leite",ja:"牛乳",zh:"牛奶",ko:"우유",th:"นม",vi:"sữa",ar:"حليب"}},
-  {id:"egg",emoji:"🥚",dishes:["Quiche","Caesar dressing","Tamago sushi","Custard"],watch:"Also in fresh pasta, mayo, glazing on pastries, and many desserts.",names:{en:"eggs",fr:"œufs",es:"huevos",it:"uova",de:"Eier",pt:"ovos",ja:"卵",zh:"鸡蛋",ko:"계란",th:"ไข่",vi:"trứng",ar:"بيض"}},
-  {id:"wheat_gluten",emoji:"🌾",dishes:["Ramen","Pizza","Dumplings","Soy sauce dishes"],watch:"Regular soy sauce contains wheat. Gluten also hides in seitan, malt, and many sauces.",names:{en:"wheat / gluten",fr:"blé / gluten",es:"trigo / gluten",it:"grano / glutine",de:"Weizen / Gluten",pt:"trigo / glúten",ja:"小麦・グルテン",zh:"小麦 / 麸质",ko:"밀 / 글루텐",th:"ข้าวสาลี / กลูเตน",vi:"lúa mì / gluten",ar:"قمح / جلوتين"}},
-  {id:"soy",emoji:"🫘",dishes:["Miso soup","Edamame","Tofu dishes","Veggie burgers"],watch:"Common in Asian cooking via soy sauce, tofu, and tempeh; soy lecithin is in many packaged foods.",names:{en:"soy",fr:"soja",es:"soja",it:"soia",de:"Soja",pt:"soja",ja:"大豆",zh:"大豆",ko:"대두",th:"ถั่วเหลือง",vi:"đậu nành",ar:"صويا"}},
-  {id:"peas",emoji:"🫛",dishes:["Split pea soup","Pea & ham soup","Risi e bisi","Matar paneer"],watch:"Pea protein is now common in meat substitutes and protein snacks. Peas also mix invisibly into fried rice, pilafs, and soups.",names:{en:"peas",fr:"pois",es:"guisantes",it:"piselli",de:"Erbsen",pt:"ervilhas",ja:"グリーンピース",zh:"豌豆",ko:"완두콩",th:"ถั่วลันเตา",vi:"đậu Hà Lan",ar:"بازلاء"}},
-  {id:"chickpeas",emoji:"🧆",dishes:["Hummus","Falafel","Chana masala","Pakora fritters"],watch:"Hummus arrives unasked with many mezze and wraps. Chickpea flour (gram / besan) thickens fritters like pakora and some batters.",names:{en:"chickpeas",fr:"pois chiches",es:"garbanzos",it:"ceci",de:"Kichererbsen",pt:"grão-de-bico",ja:"ひよこ豆",zh:"鹰嘴豆",ko:"병아리콩",th:"ถั่วชิกพี",vi:"đậu gà",ar:"حمص"}},
-  {id:"lentils",emoji:"🍛",dishes:["Dal curries","Lentil soup","Mujadara","Mercimek köfte"],watch:"Dal and lentil soups rarely say 'lentil' on the menu. Lentils also stand in for meat in many vegan patties and sauces.",names:{en:"lentils",fr:"lentilles",es:"lentejas",it:"lenticchie",de:"Linsen",pt:"lentilhas",ja:"レンズ豆",zh:"扁豆",ko:"렌틸콩",th:"ถั่วเลนทิล",vi:"đậu lăng",ar:"عدس"}},
-  {id:"fish",emoji:"🐟",dishes:["Bouillabaisse","Sushi","Fish sauce dishes","Caesar dressing"],watch:"Fish sauce is ubiquitous in Southeast Asian cooking. Worcestershire sauce contains anchovies.",names:{en:"fish",fr:"poisson",es:"pescado",it:"pesce",de:"Fisch",pt:"peixe",ja:"魚",zh:"鱼类",ko:"생선",th:"ปลา",vi:"cá",ar:"سمك"}},
-  {id:"shellfish",emoji:"🦐",dishes:["Shrimp scampi","Crab rangoon","Lobster bisque","Shrimp paste curries"],watch:"Shrimp paste (belacan / kapi / mắm tôm) hides in many Southeast Asian curries and dips. Shared fryers are risky too.",names:{en:"shellfish & crustaceans",fr:"crustacés et mollusques",es:"mariscos",it:"crostacei e molluschi",de:"Schalentiere",pt:"mariscos",ja:"甲殻類・貝類",zh:"贝类 / 甲壳类",ko:"갑각류·조개류",th:"อาหารทะเล (กุ้ง ปู หอย)",vi:"hải sản có vỏ",ar:"ثمار البحر القشرية"}},
-  {id:"sesame",emoji:"🌱",dishes:["Hummus / tahini","Sesame buns","Goma-ae spinach","Halva"],watch:"Sesame oil is heavily used in East Asian kitchens. Sesame seeds cover most burger buns.",names:{en:"sesame",fr:"sésame",es:"sésamo / ajonjolí",it:"sesamo",de:"Sesam",pt:"gergelim",ja:"ごま",zh:"芝麻",ko:"참깨",th:"งา",vi:"mè / vừng",ar:"سمسم"}},
-  {id:"mustard",emoji:"🟡",dishes:["Dijon vinaigrette","Deli sausages","Curry pastes","Pickled dishes"],watch:"Mustard seed powder sneaks into sauces, sausages, pickles, and many prepared foods.",names:{en:"mustard",fr:"moutarde",es:"mostaza",it:"senape",de:"Senf",pt:"mostarda",ja:"マスタード・からし",zh:"芥末",ko:"겨자",th:"มัสตาร์ด",vi:"mù tạt",ar:"خردل"}},
-  {id:"celery",emoji:"🥬",dishes:["Vegetable stocks & soups","Waldorf salad","Seasoning mixes","Bouillon cubes"],watch:"Celery is a base of most stocks and bouillons across Europe, plus spice mixes. It is rarely listed on the plate.",names:{en:"celery",fr:"céleri",es:"apio",it:"sedano",de:"Sellerie",pt:"aipo",ja:"セロリ",zh:"芹菜",ko:"셀러리",th:"ขึ้นฉ่าย",vi:"cần tây",ar:"كرفس"}},
-  {id:"sulfites",emoji:"🍷",dishes:["Wine & beer","Dried fruit","Shrimp cocktail","French fries (frozen)"],watch:"Used as a preservative in wine, dried fruit, some processed shrimp, and some frozen potatoes.",names:{en:"sulfites",fr:"sulfites",es:"sulfitos",it:"solfiti",de:"Sulfite",pt:"sulfitos",ja:"亜硫酸塩",zh:"亚硫酸盐",ko:"아황산염",th:"ซัลไฟต์",vi:"sunfit",ar:"كبريتيت"}},
-  {id:"lupin",emoji:"🌼",dishes:["Lupin beans","Gluten-free pastas","Some biscuits","Lupin-flour bread"],watch:"Lupin flour is increasingly used in gluten-free and protein-enriched baked goods.",names:{en:"lupin",fr:"lupin",es:"altramces / lupino",it:"lupini",de:"Lupinen",pt:"tremoços",ja:"ルピナス",zh:"羽扇豆",ko:"루핀",th:"ถั่วลูพิน",vi:"đậu lupin",ar:"لوبين"}},
+  {id:"peanuts",dishes:["Pad Thai","Satay skewers","Peanut butter cookies","Mole sauce"],watch:"Often hidden in Asian sauces, garnishes, and desserts.",names:{en:"peanuts",fr:"arachides",es:"cacahuetes / maní",it:"arachidi",de:"Erdnüsse",pt:"amendoim",ja:"ピーナッツ",zh:"花生",ko:"땅콩",th:"ถั่วลิสง",vi:"đậu phộng",ar:"فول سوداني"}},
+  {id:"tree_nuts",dishes:["Pesto (pine nuts)","Baklava","Almond croissants","Granola"],watch:"Includes almonds, cashews, walnuts, hazelnuts, pistachios, and pine nuts. Watch nut oils in salads and pastries.",names:{en:"tree nuts",fr:"fruits à coque",es:"frutos secos",it:"frutta a guscio",de:"Nüsse",pt:"frutos de casca rija",ja:"木の実類",zh:"坚果",ko:"견과류",th:"ถั่วเปลือกแข็ง",vi:"các loại hạt",ar:"مكسرات"}},
+  {id:"milk",dishes:["Butter chicken","Mac & cheese","Bechamel lasagna","Crème brûlée"],watch:"Butter, cream, cheese, and ghee count too. Many curries and sauces use cream or butter.",names:{en:"milk / dairy",fr:"lait",es:"leche",it:"latte",de:"Milch",pt:"leite",ja:"牛乳",zh:"牛奶",ko:"우유",th:"นม",vi:"sữa",ar:"حليب"}},
+  {id:"egg",dishes:["Quiche","Caesar dressing","Tamago sushi","Custard"],watch:"Also in fresh pasta, mayo, glazing on pastries, and many desserts.",names:{en:"eggs",fr:"œufs",es:"huevos",it:"uova",de:"Eier",pt:"ovos",ja:"卵",zh:"鸡蛋",ko:"계란",th:"ไข่",vi:"trứng",ar:"بيض"}},
+  {id:"wheat_gluten",dishes:["Ramen","Pizza","Dumplings","Soy sauce dishes"],watch:"Regular soy sauce contains wheat. Gluten also hides in seitan, malt, and many sauces.",names:{en:"wheat / gluten",fr:"blé / gluten",es:"trigo / gluten",it:"grano / glutine",de:"Weizen / Gluten",pt:"trigo / glúten",ja:"小麦・グルテン",zh:"小麦 / 麸质",ko:"밀 / 글루텐",th:"ข้าวสาลี / กลูเตน",vi:"lúa mì / gluten",ar:"قمح / جلوتين"}},
+  {id:"soy",dishes:["Miso soup","Edamame","Tofu dishes","Veggie burgers"],watch:"Common in Asian cooking via soy sauce, tofu, and tempeh; soy lecithin is in many packaged foods.",names:{en:"soy",fr:"soja",es:"soja",it:"soia",de:"Soja",pt:"soja",ja:"大豆",zh:"大豆",ko:"대두",th:"ถั่วเหลือง",vi:"đậu nành",ar:"صويا"}},
+  {id:"peas",dishes:["Split pea soup","Pea & ham soup","Risi e bisi","Matar paneer"],watch:"Pea protein is now common in meat substitutes and protein snacks. Peas also mix invisibly into fried rice, pilafs, and soups.",names:{en:"peas",fr:"pois",es:"guisantes",it:"piselli",de:"Erbsen",pt:"ervilhas",ja:"グリーンピース",zh:"豌豆",ko:"완두콩",th:"ถั่วลันเตา",vi:"đậu Hà Lan",ar:"بازلاء"}},
+  {id:"chickpeas",dishes:["Hummus","Falafel","Chana masala","Pakora fritters"],watch:"Hummus arrives unasked with many mezze and wraps. Chickpea flour (gram / besan) thickens fritters like pakora and some batters.",names:{en:"chickpeas",fr:"pois chiches",es:"garbanzos",it:"ceci",de:"Kichererbsen",pt:"grão-de-bico",ja:"ひよこ豆",zh:"鹰嘴豆",ko:"병아리콩",th:"ถั่วชิกพี",vi:"đậu gà",ar:"حمص"}},
+  {id:"lentils",dishes:["Dal curries","Lentil soup","Mujadara","Mercimek köfte"],watch:"Dal and lentil soups rarely say 'lentil' on the menu. Lentils also stand in for meat in many vegan patties and sauces.",names:{en:"lentils",fr:"lentilles",es:"lentejas",it:"lenticchie",de:"Linsen",pt:"lentilhas",ja:"レンズ豆",zh:"扁豆",ko:"렌틸콩",th:"ถั่วเลนทิล",vi:"đậu lăng",ar:"عدس"}},
+  {id:"fish",dishes:["Bouillabaisse","Sushi","Fish sauce dishes","Caesar dressing"],watch:"Fish sauce is ubiquitous in Southeast Asian cooking. Worcestershire sauce contains anchovies.",names:{en:"fish",fr:"poisson",es:"pescado",it:"pesce",de:"Fisch",pt:"peixe",ja:"魚",zh:"鱼类",ko:"생선",th:"ปลา",vi:"cá",ar:"سمك"}},
+  {id:"shellfish",dishes:["Shrimp scampi","Crab rangoon","Lobster bisque","Shrimp paste curries"],watch:"Shrimp paste (belacan / kapi / mắm tôm) hides in many Southeast Asian curries and dips. Shared fryers are risky too.",names:{en:"shellfish & crustaceans",fr:"crustacés et mollusques",es:"mariscos",it:"crostacei e molluschi",de:"Schalentiere",pt:"mariscos",ja:"甲殻類・貝類",zh:"贝类 / 甲壳类",ko:"갑각류·조개류",th:"อาหารทะเล (กุ้ง ปู หอย)",vi:"hải sản có vỏ",ar:"ثمار البحر القشرية"}},
+  {id:"sesame",dishes:["Hummus / tahini","Sesame buns","Goma-ae spinach","Halva"],watch:"Sesame oil is heavily used in East Asian kitchens. Sesame seeds cover most burger buns.",names:{en:"sesame",fr:"sésame",es:"sésamo / ajonjolí",it:"sesamo",de:"Sesam",pt:"gergelim",ja:"ごま",zh:"芝麻",ko:"참깨",th:"งา",vi:"mè / vừng",ar:"سمسم"}},
+  {id:"mustard",dishes:["Dijon vinaigrette","Deli sausages","Curry pastes","Pickled dishes"],watch:"Mustard seed powder sneaks into sauces, sausages, pickles, and many prepared foods.",names:{en:"mustard",fr:"moutarde",es:"mostaza",it:"senape",de:"Senf",pt:"mostarda",ja:"マスタード・からし",zh:"芥末",ko:"겨자",th:"มัสตาร์ด",vi:"mù tạt",ar:"خردل"}},
+  {id:"celery",dishes:["Vegetable stocks & soups","Waldorf salad","Seasoning mixes","Bouillon cubes"],watch:"Celery is a base of most stocks and bouillons across Europe, plus spice mixes. It is rarely listed on the plate.",names:{en:"celery",fr:"céleri",es:"apio",it:"sedano",de:"Sellerie",pt:"aipo",ja:"セロリ",zh:"芹菜",ko:"셀러리",th:"ขึ้นฉ่าย",vi:"cần tây",ar:"كرفس"}},
+  {id:"sulfites",dishes:["Wine & beer","Dried fruit","Shrimp cocktail","French fries (frozen)"],watch:"Used as a preservative in wine, dried fruit, some processed shrimp, and some frozen potatoes.",names:{en:"sulfites",fr:"sulfites",es:"sulfitos",it:"solfiti",de:"Sulfite",pt:"sulfitos",ja:"亜硫酸塩",zh:"亚硫酸盐",ko:"아황산염",th:"ซัลไฟต์",vi:"sunfit",ar:"كبريتيت"}},
+  {id:"lupin",dishes:["Lupin beans","Gluten-free pastas","Some biscuits","Lupin-flour bread"],watch:"Lupin flour is increasingly used in gluten-free and protein-enriched baked goods.",names:{en:"lupin",fr:"lupin",es:"altramces / lupino",it:"lupini",de:"Lupinen",pt:"tremoços",ja:"ルピナス",zh:"羽扇豆",ko:"루핀",th:"ถั่วลูพิน",vi:"đậu lupin",ar:"لوبين"}},
 ];
+const BY_ID = {};
+ALLERGENS.forEach(a => BY_ID[a.id] = a);
 
+function loadLevels(){
+  try { return JSON.parse(localStorage.getItem("allergy_card_levels") || "{}"); } catch(e){ return {}; }
+}
 const state = {
-  selected: new Set(JSON.parse(localStorage.getItem("allergy_card_selected")||"[]")),
+  levels: loadLevels(),          // {id: 1|2|3}
   lang: localStorage.getItem("allergy_card_lang") || "en",
   expanded: new Set(),
+  fromShare: false,              // arrived via ?a= link: show the card immediately, don't persist until edited
 };
+// Shared-card URL: ?a=peanuts:3,shellfish:2&lang=ja — the whole profile lives in the link (and in the QR).
 // ?demo=select | card-ja — reproducible states used for README screenshots; harmless in normal use
-const demo = new URLSearchParams(location.search).get("demo");
+const params = new URLSearchParams(location.search);
+const demo = params.get("demo");
 if (demo) {
   localStorage.setItem("allergy_card_onboarded", "1");
-  if (demo === "select") { state.selected = new Set(["peanuts","shellfish","sesame"]); state.lang = "en"; }
-  if (demo === "card-ja") { state.selected = new Set(["peanuts","shellfish","sesame"]); state.lang = "ja"; }
+  if (demo === "select") { state.levels = {peanuts:2,shellfish:2,sesame:1}; state.lang = "en"; }
+  if (demo === "card-ja") { state.levels = {peanuts:3,shellfish:2,sesame:1}; state.lang = "ja"; }
+} else if (params.get("a")) {
+  const lvls = {};
+  params.get("a").split(",").forEach(part => {
+    const [id, l] = part.split(":");
+    const n = parseInt(l, 10);
+    if (BY_ID[id] && n >= 1 && n <= 3) lvls[id] = n;
+  });
+  if (Object.keys(lvls).length) {
+    state.levels = lvls;
+    state.fromShare = true;
+  }
+  const lg = params.get("lang");
+  if (lg && LANG_CODES[lg]) state.lang = lg;
 }
 function save(){
-  localStorage.setItem("allergy_card_selected", JSON.stringify([...state.selected]));
+  localStorage.setItem("allergy_card_levels", JSON.stringify(state.levels));
   localStorage.setItem("allergy_card_lang", state.lang);
 }
 function name(a, lang){ return a.names[lang] || a.names.en; }
-function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+function profileUrl(){
+  const slug = Object.keys(state.levels).sort().map(id => id + ":" + state.levels[id]).join(",");
+  const u = new URL(location.href.split("?")[0]);
+  u.search = "?a=" + slug + "&lang=" + state.lang;
+  return u.toString();
+}
+function qrImg(url, cell){
+  try {
+    const qr = qrcode(0, "M");
+    qr.addData(url, "Byte");
+    qr.make();
+    return qr.createImgTag(cell || 4, 8);
+  } catch(e){ return ""; }
+}
+function copyLink(){
+  const url = profileUrl();
+  const done = () => {};
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).catch(()=>{});
+  } else {
+    const ta = document.createElement("textarea");
+    ta.value = url; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); } catch(e){}
+    document.body.removeChild(ta);
+  }
+}
 
 function fillLangSelect(sel){
   sel.innerHTML = LANGUAGES.map(l => `<option value="${l.code}" ${l.code===state.lang?"selected":""}>${l.native} — ${l.label}</option>`).join("");
@@ -181,29 +310,41 @@ function fillLangSelect(sel){
 function renderGrid(){
   const grid = document.getElementById("grid");
   grid.innerHTML = ALLERGENS.map(a => {
-    const sel = state.selected.has(a.id), exp = state.expanded.has(a.id);
-    return `<div class="allergen ${sel?"selected":""}" data-id="${a.id}">
-      <div class="top">
-        <div class="emoji">${a.emoji}</div>
-        <div>
-          <div class="name">${esc(name(a, state.lang))}</div>
-          ${state.lang!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
+    const lvl = state.levels[a.id] || 0, exp = state.expanded.has(a.id);
+    return `<div class="allergen ${lvl?"selected":""}" data-id="${a.id}">
+      <img class="thumb" loading="lazy" src="images/${a.id}/1.jpg" alt="${esc(a.names.en)}">
+      <div class="body">
+        <div class="top">
+          <div>
+            <div class="name">${esc(name(a, state.lang))}</div>
+            ${state.lang!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
+          </div>
+          <div class="check">✓</div>
         </div>
-        <div class="check">✓</div>
+        <div class="pills">
+          ${[1,2,3].map(l=>`<div class="pill lv${l} ${lvl===l?("on"+l):""}" data-l="${l}">${LEVELS_PILL[l]}</div>`).join("")}
+        </div>
+        <button class="more" data-id="${a.id}">${exp?"hide dishes ▴":"example dishes ▾"}</button>
+        ${exp ? `<div class="dishes"><b>Usually in:</b><br>${a.dishes.map(d=>"• "+esc(d)).join("<br>")}
+          <div class="watch">Watch out: ${esc(a.watch)}</div></div>` : ""}
       </div>
-      <button class="more" data-id="${a.id}">${exp?"hide dishes ▴":"example dishes ▾"}</button>
-      ${exp ? `<div class="dishes"><b>Usually in:</b><br>${a.dishes.map(d=>"• "+esc(d)).join("<br>")}
-        <div class="watch">Watch out: ${esc(a.watch)}</div></div>` : ""}
     </div>`;
   }).join("");
   grid.querySelectorAll(".allergen").forEach(el => {
     el.addEventListener("click", ev => {
       const id = el.dataset.id;
-      if (ev.target.classList.contains("more")) return;
-      state.selected.has(id) ? state.selected.delete(id) : state.selected.add(id);
+      if (ev.target.classList.contains("more") || ev.target.classList.contains("pill")) return;
+      if (state.levels[id]) { delete state.levels[id]; }
+      else { state.levels[id] = 2; }   // default severity on select
       save(); renderGrid(); renderButton();
     });
   });
+  grid.querySelectorAll(".pill").forEach(p => p.addEventListener("click", ev => {
+    ev.stopPropagation();
+    const id = p.closest(".allergen").dataset.id;
+    state.levels[id] = parseInt(p.dataset.l, 10);
+    save(); renderGrid(); renderButton();
+  }));
   grid.querySelectorAll(".more").forEach(btn => btn.addEventListener("click", ev => {
     ev.stopPropagation();
     const id = btn.dataset.id;
@@ -212,20 +353,62 @@ function renderGrid(){
   }));
 }
 function renderButton(){
-  const n = state.selected.size;
+  const n = Object.keys(state.levels).length;
   document.getElementById("cardBtn").disabled = n === 0;
   document.getElementById("count").textContent = n ? `${n} allergen${n>1?"s":""} selected` : "Select at least one allergen";
+}
+function stripHtml(dots){
+  // swipe position -> pagination dots
+  const on = idx => { dots.forEach((d,i)=>d.classList.toggle("on", i===idx)); };
+  on(0);
+  return on;
 }
 function openCard(){
   document.getElementById("phrase").textContent = PHRASES[state.lang] || PHRASES.en;
   document.getElementById("phraseEn").textContent = state.lang==="en" ? "" : PHRASES.en;
-  document.getElementById("cardList").innerHTML = ALLERGENS.filter(a=>state.selected.has(a.id)).map(a=>
-    `<li><div class="e">${a.emoji}</div><div><div class="n">${esc(name(a,state.lang))}</div>
-     ${state.lang!=="en" ? `<div class="s">${esc(a.names.en)}</div>` : ""}</div></li>`).join("");
+  const banner = document.getElementById("deadlyBanner");
+  const anyDeadly = Object.values(state.levels).includes(3);
+  banner.style.display = anyDeadly ? "block" : "none";
+  if (anyDeadly) banner.textContent = DEADLINE[state.lang] || DEADLINE.en;
+  const sel = ALLERGENS.filter(a => state.levels[a.id]);
+  document.getElementById("cardList").innerHTML = sel.map(a => `
+    <div class="acard">
+      <div class="imwrap">
+        <div class="strip">${[1,2,3].map(i=>`<img loading="lazy" src="images/${a.id}/${i}.jpg" alt="${esc(a.names.en)}">`).join("")}</div>
+        <div class="dots">${"<div class='dot'></div>".repeat(3)}</div>
+      </div>
+      <div class="cbody">
+        <div class="nm"><span class="n">${esc(name(a,state.lang))}</span>
+        ${state.lang!=="en" ? `<span class="en">${esc(a.names.en)}</span>` : ""}</div>
+        <span class="sev sev${state.levels[a.id]}">${SEV[state.levels[a.id]][state.lang] || SEV[state.levels[a.id]].en}</span>
+      </div>
+    </div>`).join("");
+  document.querySelectorAll("#cardList .strip").forEach(strip => {
+    const dots = strip.parentElement.querySelectorAll(".dot");
+    const setDot = stripHtml(dots);
+    strip.addEventListener("scroll", () => {
+      const idx = Math.round(strip.scrollLeft / strip.clientWidth);
+      setDot(idx);
+    });
+  });
+  const url = profileUrl();
+  document.getElementById("cardQr").innerHTML = qrImg(url, 3);
+  document.getElementById("cardQrCap").textContent = SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
   document.getElementById("card").classList.add("open");
 }
+function openShare(){
+  const url = profileUrl();
+  document.getElementById("shareQrImg").innerHTML = qrImg(url, 5);
+  document.getElementById("shareUrl").textContent = url;
+  document.getElementById("share").classList.add("open");
+}
+
 document.getElementById("cardClose").addEventListener("click", ()=>document.getElementById("card").classList.remove("open"));
 document.getElementById("cardBtn").addEventListener("click", openCard);
+document.getElementById("shareQr").addEventListener("click", openShare);
+document.getElementById("shareCopy").addEventListener("click", copyLink);
+document.getElementById("shareCopyBtn").addEventListener("click", copyLink);
+document.getElementById("shareClose").addEventListener("click", ()=>document.getElementById("share").classList.remove("open"));
 
 const langSel = document.getElementById("langSel"), cardLangSel = document.getElementById("cardLangSel");
 fillLangSelect(langSel); fillLangSelect(cardLangSel); cardLangSel.value = state.lang;
@@ -233,17 +416,18 @@ function setLang(v){ state.lang = v; save(); renderGrid(); [langSel,cardLangSel]
 langSel.addEventListener("change", e=>setLang(e.target.value));
 cardLangSel.addEventListener("change", e=>setLang(e.target.value));
 
-// onboarding: first visit only
-if (!localStorage.getItem("allergy_card_onboarded")) {
+// onboarding: first visit only (skipped when arriving through a shared-card link)
+if (!localStorage.getItem("allergy_card_onboarded") && !state.fromShare) {
   document.getElementById("onboard").classList.add("open");
 }
 document.getElementById("onboardGo").addEventListener("click", ()=>{
   localStorage.setItem("allergy_card_onboarded", "1");
   document.getElementById("onboard").classList.remove("open");
+  if (state.fromShare) openCard();
 });
 
 renderGrid(); renderButton();
-if (demo === "card-ja") openCard();
+if (demo === "card-ja" || state.fromShare) openCard();
 
 // offline: cache everything locally after first load
 if ("serviceWorker" in navigator) {

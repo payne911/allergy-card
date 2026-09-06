@@ -16,8 +16,14 @@ browser, no download needed.
 
 ## Features
 
-- The standard major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, fish,
-  shellfish, sesame, mustard, celery, sulfites, lupin).
+- 16 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
+  lentils, fish, shellfish, sesame, mustard, celery, sulfites, lupin), each depicted with
+  real photographs instead of emojis — swipe an allergen card to see more pictures.
+- A severity level per allergen — "makes me ill", "can't eat it", or "deadly" — shown
+  prominently on the card, with an extra warning banner when anything is marked deadly.
+- A shareable card link and QR code: the whole profile (allergens, levels, language) is
+  encoded in the URL, so the waiter can scan the QR and carry the card to the kitchen
+  on their own phone.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
 - A full-screen, high-contrast "show the waiter" card.
@@ -59,7 +65,10 @@ app — always double-check with the restaurant and carry your medication.
 
 ## Web preview (this repo)
 
-The preview site lives in [`docs/`](docs/index.html) and is a single self-contained
-HTML file — all allergens, languages, example dishes, the onboarding, and the red
-waiter card, with choices persisted in `localStorage` and a service worker
-(`docs/sw.js`) for offline use.
+The preview site lives in [`docs/`](docs/index.html) — all allergens, languages,
+example dishes, severity levels, shareable URLs with a QR code, and the red waiter
+card, with choices persisted in `localStorage` and a service worker
+(`docs/sw.js`) for offline use. Photos are bundled under `docs/images/`
+(see [CREDITS](docs/images/CREDITS.md)); QR codes are generated on-device by the
+bundled open-source [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)
+library (`docs/qr.js`). The site auto-deploys from `main:/docs` on every push.
