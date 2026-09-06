@@ -322,6 +322,7 @@ const UILIST = [
  "Edit",
  "Remove",
  "App",
+ "{n} allergen selected",
 ];
 const U_ROW = UILIST.length;
 const packFails = {};
@@ -596,9 +597,9 @@ function renderButton(){
   const n = Object.keys(state.selected).length;
   document.getElementById("cardBtn").disabled = n === 0;
   document.getElementById("cardBtn").textContent = T("SHOW THE WAITER CARD");
-  document.getElementById("count").textContent = n
-    ? T("{n} allergens selected").replace("{n}", n)
-    : T("Select at least one allergen");
+  document.getElementById("count").textContent = n === 0 ? T("Select at least one allergen")
+    : n === 1 ? T("{n} allergen selected").replace("{n}", 1)
+    : T("{n} allergens selected").replace("{n}", n);
 }
 function openCard(){
   ensurePack(state.lang).then(() => {
