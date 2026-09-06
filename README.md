@@ -32,8 +32,9 @@ Change something once in `docs/`, and both the site and the app get it.
   lentils, fish, shellfish, sesame, mustard, sulfites), each shown with a
   big emoji so the card reads at a glance. A search bar filters the list instantly.
 - **Add your own restrictions.** Anything beyond the built-in list — a rare allergy, a
-  preference, a medication interaction — can be added with your own wording and an emoji
-  you pick. Custom entries select, search, edit, remove and share exactly like the
+  preference, a medication interaction — can be added with your own wording; the emoji
+  is optional (tap a preset or type one with your phone keyboard, or leave it blank).
+  Custom entries select, search, edit, remove and share exactly like the
   built-ins; because they're free text, they appear on the card in every language
   word-for-word as typed.
 - **188 languages.** On first launch you pick your own language for the app itself —
@@ -47,8 +48,12 @@ Change something once in `docs/`, and both the site and the app get it.
   links (including the retired id:level format) open exactly as before.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
-- A full-screen, high-contrast "show the waiter" card, with RTL support for
-  right-to-left scripts.
+- A full-screen, high-contrast "show the waiter" card — one line per allergen,
+  QR beneath to carry the card to the kitchen, and a tap-to-copy 🔗 button —
+  with RTL support for right-to-left scripts.
+- The ⚙️ settings gear in the title bar opens a small settings dialog: app
+  language (one more tap to the full list) and an "allergen emojis" switch
+  for a text-only layout.
 - A first-launch walkthrough showing new users the three things to do:
   pick allergens, choose a language, show the red card.
 

@@ -58,6 +58,9 @@ UI_STRINGS = [
  "Remove",
  "App",
  "{n} allergen selected",
+ "Settings",
+ "App language",
+ "Show allergen emojis",
 ]
 
 # ---- language list: ISO 639-1 + major 639-2/3 supplements -----------------
