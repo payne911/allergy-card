@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Allergy Card — show the waiter, in their language</title>
-<meta name="description" content="Pick your allergens and how serious each one is, pick a language, and show the waiter a big red card with photos — in their language. Everything lives in a shareable link and QR code. Works offline.">
+<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card with photos — in their language. Everything lives in a shareable link and QR code. Works offline.">
 <style>
   :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff; --sel:#fff0f0; --line:#e0dada; }
   * { box-sizing:border-box; }
@@ -27,12 +27,6 @@
   .allergen .en { font-size:12.5px; color:var(--soft); }
   .allergen .check { margin-left:auto; color:var(--red); font-weight:700; font-size:20px; visibility:hidden; }
   .allergen.selected .check { visibility:visible; }
-  .pills { display:flex; gap:6px; margin-top:8px; display:none; }
-  .allergen.selected .pills { display:flex; }
-  .pill { flex:1; font-size:12px; font-weight:600; padding:6px 4px; border:1px solid var(--line); border-radius:10px; background:#fff; color:var(--ink); cursor:pointer; text-align:center; }
-  .pill.on1 { background:#B08000; border-color:#B08000; color:#fff; }
-  .pill.on2 { background:#B26A00; border-color:#B26A00; color:#fff; }
-  .pill.on3 { background:#000; border-color:#000; color:#fff; }
   .allergen .more { margin-top:8px; padding:0; border:0; background:none; color:#888; font-size:13px; cursor:pointer; text-decoration:underline; }
   .allergen .dishes { margin-top:8px; font-size:13.5px; }
   .allergen .watch { color:var(--soft); font-size:12.5px; margin-top:4px; }
@@ -48,7 +42,6 @@
   .tri { width:0; height:0; border-left:34px solid transparent; border-right:34px solid transparent; border-bottom:58px solid #fff; margin:14px auto 0; position:relative; }
   .tri span { position:absolute; left:-9px; top:16px; font-size:38px; font-weight:800; color:var(--red); }
   .overlay h2 { font-size:38px; margin:18px 0 6px; font-weight:800; }
-  .overlay .deadly { font-size:20px; font-weight:700; background:#000; color:#fff; border-radius:10px; padding:10px 14px; margin:10px 0; display:none; }
   .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
   .acard { background:#fff; color:var(--ink); border-radius:16px; overflow:hidden; margin:16px 0; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
@@ -63,10 +56,6 @@
   .acard .nm { display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
   .acard .nm .n { font-size:26px; font-weight:800; }
   .acard .nm .en { font-size:14px; color:var(--soft); }
-  .sev { display:inline-block; margin-top:8px; font-size:14px; font-weight:800; letter-spacing:.06em; padding:5px 12px; border-radius:14px; color:#fff; }
-  .sev1 { background:#8A6D00; }
-  .sev2 { background:#B26A00; }
-  .sev3 { background:#000; }
   .cardqr { margin:22px auto 6px; background:#fff; border-radius:14px; padding:12px; width:max-content; }
   .cardqr .cap { color:var(--ink); font-size:12.5px; text-align:center; padding-top:6px; max-width:220px; }
   /* share modal */
@@ -96,9 +85,9 @@
   <div class="inner">
     <h1>Allergy Card</h1>
     <p class="sub">Show any waiter what you can't eat, with photos, in their language.</p>
-    <div class="step"><div class="num">1</div><div><b>Pick your allergens</b><span>Tap everything you're allergic to, then set how serious each one is: makes you ill, can't eat, or deadly.</span></div></div>
+    <div class="step"><div class="num">1</div><div><b>Pick your allergens</b><span>Tap everything you're allergic to — one tap selects, another deselects.</span></div></div>
     <div class="step"><div class="num">2</div><div><b>Choose the local language</b><span>French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
-    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with photos, severity levels, and a QR they can scan.</span></div></div>
+    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with photos and a QR they can scan.</span></div></div>
     <div class="step"><div class="num">4</div><div><b>Share by link or QR</b><span>Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
     <button id="onboardGo">GET STARTED</button>
     <p class="fine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
@@ -107,7 +96,7 @@
 
 <header>
   <h1>Allergy Card</h1>
-  <p>Tap the allergens you're allergic to and set how serious each one is. Works offline.</p>
+  <p>Tap the allergens you're allergic to. Works offline.</p>
 </header>
 
 <main>
@@ -131,7 +120,6 @@
     <div class="row" style="justify-content:center;"><select id="cardLangSel"></select></div>
     <div class="tri"><span>!</span></div>
     <h2>ALLERGY ALERT</h2>
-    <div class="deadly" id="deadlyBanner"></div>
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
     <div id="cardList"></div>
@@ -142,7 +130,7 @@
 <div id="share">
   <div class="box">
     <h3>Share this allergy card</h3>
-    <p style="margin:4px 0 0;">This QR code and link carry the full profile: allergens, levels, and language.</p>
+    <p style="margin:4px 0 0;">This QR code and link carry the full profile: allergens and language.</p>
     <div id="shareQrImg" style="margin:12px 0;"></div>
     <div class="url" id="shareUrl"></div>
     <button class="linkbtn" id="shareCopyBtn">Copy link</button>
@@ -182,28 +170,6 @@ const PHRASES = {
   vi:"Tôi bị dị ứng với những thức ăn này. Vui lòng không cho vào món ăn của tôi.",
   ar:"لدي حساسية من هذه الأطعمة. يرجى عدم وضعها في وجبتي.",
 };
-// severity badge per level + language
-const SEV = {
-  1:{en:"MAKES ME ILL",fr:"ME REND MALADE",es:"ME HACE DAÑO",it:"MI FA MALE",de:"MACHT MICH KRANK",pt:"FAZ-ME MAL",ja:"具合が悪くなる",zh:"吃了会不舒服",ko:"배탈이 나요",th:"ทำให้ฉันป่วย",vi:"làm tôi bị bệnh",ar:"يمرضني"},
-  2:{en:"CAN'T EAT IT",fr:"JE NE PEUX PAS EN MANGER",es:"NO PUEDO COMERLO",it:"NON POSSO MANGIARLO",de:"KANN ICH NICHT ESSEN",pt:"NÃO POSSO COMÊ-LO",ja:"食べられません",zh:"不能吃",ko:"먹을 수 없어요",th:"กินไม่ได้",vi:"không thể ăn",ar:"لا أستطيع أكله"},
-  3:{en:"DEADLY",fr:"MORTEL",es:"MORTAL",it:"LETALE",de:"TÖDLICH",pt:"MORTAL",ja:"致命的",zh:"致命",ko:"치명적",th:"ถึงตายได้",vi:"chết người",ar:"قاتل"},
-};
-const LEVELS_PILL = {1:"Makes me ill", 2:"Can't eat", 3:"Deadly"};
-// shown on the card when any level-3 allergen is selected
-const DEADLINE = {
-  en:"Even a small amount could kill me. Please make sure my meal has not touched it.",
-  fr:"Même une petite quantité pourrait me tuer. Merci de vérifier que mon repas n'y a pas touché.",
-  es:"Incluso una pequeña cantidad podría matarme. Asegúrese de que mi comida no lo ha tocado.",
-  it:"Anche una piccola quantità potrebbe uccidermi. Si assicuri che il mio pasto non ne sia venuto a contatto.",
-  de:"Schon eine kleine Menge kann tödlich sein. Bitte stellen Sie sicher, dass mein Essen damit nicht in Berührung gekommen ist.",
-  pt:"Mesmo uma pequena quantidade pode ser fatal. Por favor, garanta que a minha refeição não esteve em contacto.",
-  ja:"少量でも命に関わります。私の食事がこれらに触れていないことを確認してください。",
-  zh:"即使微量也可能危及生命。请确保我的餐点完全没有接触。",
-  ko:"조금만 먹어도 생명이 위험합니다. 제 음식이 닿지 않았는지 꼭 확인해 주세요.",
-  th:"แม้เพียงเล็กน้อยอาจถึงชีวิต กรุณาตรวจสอบว่าอาหารของฉันไม่ได้สัมผัส",
-  vi:"Chỉ một lượng nhỏ cũng có thể nguy hiểm đến tính mạng. Xin hãy đảm bảo món ăn của tôi không hề chạm vào.",
-  ar:"حتى كمية صغيرة قد تكون قاتلة. يرجى التأكد من أن وجبتي لم تلامسها أبداً.",
-};
 const SCAN_CAPTION = {
   en:"Scan to open this card on your phone",
   fr:"Scanner pour ouvrir cette carte",
@@ -239,39 +205,48 @@ const ALLERGENS = [
 const BY_ID = {};
 ALLERGENS.forEach(a => BY_ID[a.id] = a);
 
-function loadLevels(){
-  try { return JSON.parse(localStorage.getItem("allergy_card_levels") || "{}"); } catch(e){ return {}; }
+function loadSelected(){
+  // migrate profiles saved by the removed severity feature: keep the allergies, drop the levels
+  try {
+    const fresh = JSON.parse(localStorage.getItem("allergy_card_selected") || "null");
+    if (fresh) return fresh;
+    const old = JSON.parse(localStorage.getItem("allergy_card_levels") || "{}");
+    const sel = {};
+    Object.keys(old).forEach(id => { sel[id] = true; });
+    return sel;
+  } catch(e){ return {}; }
 }
 const state = {
-  levels: loadLevels(),          // {id: 1|2|3}
+  selected: loadSelected(),      // {id: true}
   lang: localStorage.getItem("allergy_card_lang") || "en",
   expanded: new Set(),
   fromShare: false,              // arrived via ?a= link: show the card immediately, don't persist until edited
 };
-// Shared-card URL: ?a=peanuts:3,shellfish:2&lang=ja — the whole profile lives in the link (and in the QR).
+// Shared-card URL: ?a=peanuts,shellfish&lang=ja — the whole profile lives in the link (and in the QR).
+// Old "id:level" links still open fine; the level part is simply ignored.
 // ?demo=select | card-ja — reproducible states used for README screenshots; harmless in normal use
 const params = new URLSearchParams(location.search);
 const demo = params.get("demo");
 if (demo) {
   localStorage.setItem("allergy_card_onboarded", "1");
-  if (demo === "select") { state.levels = {peanuts:2,shellfish:2,sesame:1}; state.lang = "en"; }
-  if (demo === "card-ja") { state.levels = {peanuts:3,shellfish:2,sesame:1}; state.lang = "ja"; }
+  const demoSel = {peanuts:true,shellfish:true,sesame:true};
+  if (demo === "select") { state.selected = Object.assign({}, demoSel); state.lang = "en"; }
+  if (demo === "card-ja") { state.selected = Object.assign({}, demoSel); state.lang = "ja"; }
 } else if (params.get("a")) {
-  const lvls = {};
+  const sel = {};
   params.get("a").split(",").forEach(part => {
-    const [id, l] = part.split(":");
-    const n = parseInt(l, 10);
-    if (BY_ID[id] && n >= 1 && n <= 3) lvls[id] = n;
+    const id = part.split(":")[0];   // tolerate legacy "id:level" format
+    if (BY_ID[id]) sel[id] = true;
   });
-  if (Object.keys(lvls).length) {
-    state.levels = lvls;
+  if (Object.keys(sel).length) {
+    state.selected = sel;
     state.fromShare = true;
   }
   const lg = params.get("lang");
   if (lg && LANG_CODES[lg]) state.lang = lg;
 }
 function save(){
-  localStorage.setItem("allergy_card_levels", JSON.stringify(state.levels));
+  localStorage.setItem("allergy_card_selected", JSON.stringify(state.selected));
   localStorage.setItem("allergy_card_lang", state.lang);
 }
 function name(a, lang){ return a.names[lang] || a.names.en; }
@@ -281,7 +256,7 @@ function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/
 // at the public URL so a kitchen's phone can open them.
 const CANONICAL_BASE = "https://payne911.github.io/allergy-card/";
 function profileUrl(){
-  const slug = Object.keys(state.levels).sort().map(id => id + ":" + state.levels[id]).join(",");
+  const slug = Object.keys(state.selected).sort().join(",");
   const base = location.protocol.startsWith("http") ? location.href.split("?")[0] : CANONICAL_BASE;
   const u = new URL(base);
   u.search = "?a=" + slug + "&lang=" + state.lang;
@@ -315,8 +290,8 @@ function fillLangSelect(sel){
 function renderGrid(){
   const grid = document.getElementById("grid");
   grid.innerHTML = ALLERGENS.map(a => {
-    const lvl = state.levels[a.id] || 0, exp = state.expanded.has(a.id);
-    return `<div class="allergen ${lvl?"selected":""}" data-id="${a.id}">
+    const on = !!state.selected[a.id], exp = state.expanded.has(a.id);
+    return `<div class="allergen ${on?"selected":""}" data-id="${a.id}">
       <img class="thumb" loading="lazy" src="images/${a.id}/1.jpg" alt="${esc(a.names.en)}">
       <div class="body">
         <div class="top">
@@ -325,9 +300,6 @@ function renderGrid(){
             ${state.lang!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
           </div>
           <div class="check">✓</div>
-        </div>
-        <div class="pills">
-          ${[1,2,3].map(l=>`<div class="pill lv${l} ${lvl===l?("on"+l):""}" data-l="${l}">${LEVELS_PILL[l]}</div>`).join("")}
         </div>
         <button class="more" data-id="${a.id}">${exp?"hide dishes ▴":"example dishes ▾"}</button>
         ${exp ? `<div class="dishes"><b>Usually in:</b><br>${a.dishes.map(d=>"• "+esc(d)).join("<br>")}
@@ -338,18 +310,12 @@ function renderGrid(){
   grid.querySelectorAll(".allergen").forEach(el => {
     el.addEventListener("click", ev => {
       const id = el.dataset.id;
-      if (ev.target.classList.contains("more") || ev.target.classList.contains("pill")) return;
-      if (state.levels[id]) { delete state.levels[id]; }
-      else { state.levels[id] = 2; }   // default severity on select
+      if (ev.target.classList.contains("more")) return;
+      if (state.selected[id]) { delete state.selected[id]; }
+      else { state.selected[id] = true; }
       save(); renderGrid(); renderButton();
     });
   });
-  grid.querySelectorAll(".pill").forEach(p => p.addEventListener("click", ev => {
-    ev.stopPropagation();
-    const id = p.closest(".allergen").dataset.id;
-    state.levels[id] = parseInt(p.dataset.l, 10);
-    save(); renderGrid(); renderButton();
-  }));
   grid.querySelectorAll(".more").forEach(btn => btn.addEventListener("click", ev => {
     ev.stopPropagation();
     const id = btn.dataset.id;
@@ -358,7 +324,7 @@ function renderGrid(){
   }));
 }
 function renderButton(){
-  const n = Object.keys(state.levels).length;
+  const n = Object.keys(state.selected).length;
   document.getElementById("cardBtn").disabled = n === 0;
   document.getElementById("count").textContent = n ? `${n} allergen${n>1?"s":""} selected` : "Select at least one allergen";
 }
@@ -371,11 +337,7 @@ function stripHtml(dots){
 function openCard(){
   document.getElementById("phrase").textContent = PHRASES[state.lang] || PHRASES.en;
   document.getElementById("phraseEn").textContent = state.lang==="en" ? "" : PHRASES.en;
-  const banner = document.getElementById("deadlyBanner");
-  const anyDeadly = Object.values(state.levels).includes(3);
-  banner.style.display = anyDeadly ? "block" : "none";
-  if (anyDeadly) banner.textContent = DEADLINE[state.lang] || DEADLINE.en;
-  const sel = ALLERGENS.filter(a => state.levels[a.id]);
+  const sel = ALLERGENS.filter(a => state.selected[a.id]);
   document.getElementById("cardList").innerHTML = sel.map(a => `
     <div class="acard">
       <div class="imwrap">
@@ -385,7 +347,6 @@ function openCard(){
       <div class="cbody">
         <div class="nm"><span class="n">${esc(name(a,state.lang))}</span>
         ${state.lang!=="en" ? `<span class="en">${esc(a.names.en)}</span>` : ""}</div>
-        <span class="sev sev${state.levels[a.id]}">${SEV[state.levels[a.id]][state.lang] || SEV[state.levels[a.id]].en}</span>
       </div>
     </div>`).join("");
   document.querySelectorAll("#cardList .strip").forEach(strip => {

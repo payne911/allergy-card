@@ -11,7 +11,7 @@ browser, no download needed.
 ## One codebase
 
 Everything lives in [`docs/`](docs/index.html): one single-page app in plain HTML/JS —
-allergen photos, languages, severity levels, shareable URLs and the QR code.
+allergen photos, languages, shareable URLs and the QR code.
 
 - The **website** is those files served as-is (GitHub Pages from `main:/docs`).
 - The **Android app** is a bare WebView shell (`app/…/MainActivity.kt`, ~50 lines)
@@ -31,9 +31,7 @@ Change something once in `docs/`, and both the site and the app get it.
 - 16 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
   lentils, fish, shellfish, sesame, mustard, celery, sulfites, lupin), each depicted with
   real photographs instead of emojis — swipe an allergen card to see more pictures.
-- A severity level per allergen — "makes me ill", "can't eat it", or "deadly" — shown
-  prominently on the card, with an extra warning banner when anything is marked deadly.
-- A shareable card link and QR code: the whole profile (allergens, levels, language) is
+- A shareable card link and QR code: the whole profile (allergens, language) is
   encoded in the URL, so the waiter can scan the QR and carry the card to the kitchen
   on their own phone.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
@@ -84,7 +82,7 @@ app — always double-check with the restaurant and carry your medication.
 ## Web preview (this repo)
 
 The preview site lives in [`docs/`](docs/index.html) — all allergens, languages,
-example dishes, severity levels, shareable URLs with a QR code, and the red waiter
+example dishes, shareable URLs with a QR code, and the red waiter
 card, with choices persisted in `localStorage` and a service worker
 (`docs/sw.js`) for offline use. Photos are bundled under `docs/images/`
 (see [CREDITS](docs/images/CREDITS.md)); QR codes are generated on-device by the
