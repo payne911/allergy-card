@@ -50,6 +50,13 @@ A GitHub Actions workflow that builds `app-debug.apk` is ready in
 `android-workflow.yml.disabled`; move it into `.github/workflows/` to enable CI
 (requires a token with the `workflow` scope).
 
+## Disclaimer
+
+This is a personal project, nothing more. It is provided as-is, with no guarantee
+of any kind. Translations and example dishes are best-effort reference material,
+not medical advice. I am not responsible for any issues that come from using this
+app — always double-check with the restaurant and carry your medication.
+
 ## Web preview (this repo)
 
 The preview site lives in [`docs/`](docs/index.html) and is a single self-contained
