@@ -276,9 +276,14 @@ function save(){
 }
 function name(a, lang){ return a.names[lang] || a.names.en; }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+// The site is served from GitHub Pages; the Android app runs this same file
+// offline from file:///android_asset. Share links and the QR must always point
+// at the public URL so a kitchen's phone can open them.
+const CANONICAL_BASE = "https://payne911.github.io/allergy-card/";
 function profileUrl(){
   const slug = Object.keys(state.levels).sort().map(id => id + ":" + state.levels[id]).join(",");
-  const u = new URL(location.href.split("?")[0]);
+  const base = location.protocol.startsWith("http") ? location.href.split("?")[0] : CANONICAL_BASE;
+  const u = new URL(base);
   u.search = "?a=" + slug + "&lang=" + state.lang;
   return u.toString();
 }
@@ -430,7 +435,9 @@ renderGrid(); renderButton();
 if (demo === "card-ja" || state.fromShare) openCard();
 
 // offline: cache everything locally after first load
-if ("serviceWorker" in navigator) {
+// Offline caching only applies to the hosted site; the Android shell already
+// bundles every asset locally and has no service-worker context on file://.
+if (location.protocol === "https:" && "serviceWorker" in navigator) {
   navigator.serviceWorker.register("sw.js").catch(()=>{});
 }
 </script>

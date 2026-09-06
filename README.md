@@ -1,12 +1,24 @@
 # Allergy Card
 
-A small native Android app for travellers with food allergies.
+A small app for travellers with food allergies.
 
 Pick your allergens, pick a language, and hand the waiter a big, unmistakable red card
 listing what you can't eat — in *their* language.
 
-**Live web preview:** https://payne911.github.io/allergy-card/ — the same app in your
+**Live web version:** https://payne911.github.io/allergy-card/ — the same app in your
 browser, no download needed.
+
+## One codebase
+
+Everything lives in [`docs/`](docs/index.html): one single-page app in plain HTML/JS —
+allergen photos, languages, severity levels, shareable URLs and the QR code.
+
+- The **website** is those files served as-is (GitHub Pages from `main:/docs`).
+- The **Android app** is a bare WebView shell (`app/…/MainActivity.kt`, ~50 lines)
+  that bundles the exact same files offline. Gradle copies `docs/` into the APK
+  before every build (`syncWebAssets` in `app/build.gradle.kts`).
+
+Change something once in `docs/`, and both the site and the app get it.
 
 ## Screenshots
 
@@ -36,8 +48,9 @@ browser, no download needed.
   and the web version caches itself on first load (service worker), so both work
   with airplane mode on.
 - **No data leaves your device.** Your selected allergens and language are stored
-  locally only — SharedPreferences on Android, `localStorage` in the browser.
-  There is no account, no server, and nothing to "delete" anywhere else.
+  locally only (`localStorage` — the Android shell uses the same storage as
+  the browser build). There is no account, no server, and nothing to "delete"
+  anywhere else.
 
 ## Languages
 
@@ -51,6 +64,11 @@ Open in Android Studio, or:
 ```bash
 gradle assembleDebug
 ```
+
+No design decision to make about "keeping the app in sync": the Gradle
+`syncWebAssets` task copies `docs/` into `app/src/main/assets/` on every build,
+so the APK always ships the same card the website serves. The shell itself
+needs nothing beyond the Android SDK — one WebView, zero dependencies.
 
 A GitHub Actions workflow that builds `app-debug.apk` is ready in
 `android-workflow.yml.disabled`; move it into `.github/workflows/` to enable CI

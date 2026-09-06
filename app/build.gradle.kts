@@ -11,16 +11,11 @@ android {
         applicationId = "com.schwing.allergycard"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
     }
 
-    buildFeatures {
-        compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
+    // Manifest already picks .MainActivity (a plain Activity), no androidx needed.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -30,13 +25,21 @@ android {
     }
 }
 
+/**
+ * The whole product lives in docs/ — the exact same code GitHub Pages serves.
+ * Copy it into the APK's bundled assets before every build so this Kotlin
+ * shell stays a thin wrapper and the app works fully offline on a plane.
+ */
+val syncWebAssets = tasks.register<Copy>("syncWebAssets") {
+    description = "Copies docs/ (the single codebase) into the bundled app assets"
+    from("${projectDir}/../docs")
+    into("${projectDir}/src/main/assets")
+}
+
+tasks.named("preBuild") {
+    dependsOn(syncWebAssets)
+}
+
 dependencies {
-    implementation(platform("androidx.compose:compose-bom:2024.06.00"))
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.activity:activity-compose:1.9.3")
-    implementation("androidx.core:core-ktx:1.15.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    // Intentionally empty: the app is one WebView and needs no support libraries.
 }
