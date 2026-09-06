@@ -1,7 +1,7 @@
 {
   "name": "Allergy Card",
   "short_name": "Allergy Card",
-  "description": "Show any waiter what you can't eat — in their language. Works offline.",
+  "description": "Show any waiter what you can't eat — in their language. 188 languages, works offline.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

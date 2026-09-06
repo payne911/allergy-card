@@ -71,6 +71,18 @@
   .step span { color:var(--soft); font-size:14px; }
   #onboard button { width:100%; height:56px; border:0; border-radius:28px; background:var(--red); color:#fff; font-size:18px; font-weight:700; cursor:pointer; margin-top:18px; }
   #onboard .fine { color:#777; font-size:13px; margin-top:12px; }
+  /* search inputs, language picker, RTL */
+  .search { width:100%; font-size:15px; padding:10px 12px 10px 34px; border:1px solid var(--line); border-radius:12px; color:var(--ink); background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 16 16'%3E%3Cpath fill='%23888' d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398l3.85 3.85a1 1 0 0 0 1.415-1.414zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E") no-repeat 10px center; }
+  .picker { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:40; display:none; align-items:flex-start; justify-content:center; padding:20px; }
+  .picker.open { display:flex; }
+  .picker .pbox { background:#fff; border-radius:16px; padding:16px; max-width:480px; width:100%; max-height:86vh; display:flex; flex-direction:column; }
+  .picker .prows { overflow-y:auto; border-top:1px solid var(--line); max-height:60vh; }
+  .prow { display:flex; justify-content:space-between; align-items:baseline; gap:12px; padding:12px 10px; border-bottom:1px solid var(--line); cursor:pointer; text-align:left; }
+  .prow:active { background:#f4efef; }
+  .prow b { font-size:16px; }
+  .prow span { color:var(--soft); font-size:12.5px; white-space:nowrap; }
+  #aSearch { margin:0 0 12px; }
+  .noRes { color:var(--soft); font-size:13px; padding:10px 4px; display:none; }
 </style>
 </head>
 <body>
@@ -78,13 +90,20 @@
 <div id="onboard">
   <div class="inner">
     <h1>Allergy Card</h1>
-    <p class="sub">Show any waiter what you can't eat, in their language.</p>
-    <div class="step"><div class="num">1</div><div><b>Pick your allergens</b><span>Tap everything you're allergic to — one tap selects, another deselects.</span></div></div>
-    <div class="step"><div class="num">2</div><div><b>Choose the local language</b><span>French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
-    <div class="step"><div class="num">3</div><div><b>Show the red card</b><span>One tap gives the waiter a full-screen card with a QR they can scan.</span></div></div>
-    <div class="step"><div class="num">4</div><div><b>Share by link or QR</b><span>Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
-    <button id="onboardGo">GET STARTED</button>
-    <p class="fine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
+    <p class="sub" id="obSub">Pick your language to get started.</p>
+    <div id="obLang">
+      <input id="obLangSearch" class="search" type="search" placeholder="Search your language…" autocomplete="off" aria-label="search your language">
+      <div id="obLangRows" style="max-height:44vh;overflow-y:auto;border:1px solid var(--line);border-radius:12px;margin-top:4px"></div>
+      <button id="obSkip" type="button" style="background:none;border:0;color:#999;font-size:13px;text-decoration:underline;width:auto;height:auto;margin-top:10px;padding:0;border-radius:0">Skip — continue in English</button>
+    </div>
+    <div id="obSteps" style="display:none">
+      <div class="step"><div class="num">1</div><div><b id="s1t">Pick your allergens</b><span id="s1d">Tap everything you're allergic to — one tap selects, another deselects.</span></div></div>
+      <div class="step"><div class="num">2</div><div><b id="s2t">Choose the local language</b><span id="s2d">French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
+      <div class="step"><div class="num">3</div><div><b id="s3t">Show the red card</b><span id="s3d">One tap gives the waiter a full-screen card with a QR they can scan.</span></div></div>
+      <div class="step"><div class="num">4</div><div><b id="s4t">Share by link or QR</b><span id="s4d">Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
+      <button id="onboardGo">GET STARTED</button>
+      <p class="fine" id="obFine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
+    </div>
   </div>
 </div>
 
@@ -95,11 +114,14 @@
 
 <main>
   <div class="row">
-    <label for="langSel">Language:</label>
-    <select id="langSel"></select>
+    <label id="langLabel">Language:</label>
+    <button class="linkbtn" id="langBtn" type="button">English ▾</button>
+    <button class="linkbtn" id="uiBtn" type="button">App: English</button>
     <button class="linkbtn" id="shareQr">Show QR</button>
     <button class="linkbtn" id="shareCopy">Copy link</button>
   </div>
+  <input id="aSearch" class="search" type="search" placeholder="Search allergens…" autocomplete="off" aria-label="search allergens">
+  <div class="noRes" id="noRes">No matches. Try another spelling.</div>
   <div id="grid" class="grid"></div>
 </main>
 
@@ -111,7 +133,7 @@
 <div id="card" class="overlay">
   <button class="close" id="cardClose" aria-label="close">✕</button>
   <div class="inner">
-    <div class="row" style="justify-content:center;"><select id="cardLangSel"></select></div>
+    <button class="linkbtn" id="cardLangBtn" type="button" style="margin-top:4px;">English ▾</button>
     <div class="tri"><span>!</span></div>
     <h2>ALLERGY ALERT</h2>
     <div class="phrase" id="phrase"></div>
@@ -123,8 +145,8 @@
 
 <div id="share">
   <div class="box">
-    <h3>Share this allergy card</h3>
-    <p style="margin:4px 0 0;">This QR code and link carry the full profile: allergens and language.</p>
+    <h3 id="shareH3">Share this allergy card</h3>
+    <p style="margin:4px 0 0;" id="shareP">This QR code and link carry the full profile: allergens and language.</p>
     <div id="shareQrImg" style="margin:12px 0;"></div>
     <div class="url" id="shareUrl"></div>
     <button class="linkbtn" id="shareCopyBtn">Copy link</button>
@@ -132,24 +154,18 @@
   </div>
 </div>
 
+<div id="picker" class="picker">
+  <div class="pbox">
+    <div style="font-weight:700;margin-bottom:8px;" id="pickerTitle">Choose a language</div>
+    <input id="pickerSearch" class="search" type="search" placeholder="Search languages…" autocomplete="off" aria-label="search languages">
+    <div class="prows" id="pickerRows"></div>
+    <div style="text-align:right;margin-top:8px"><button class="linkbtn" id="pickerCancel" type="button">Close</button></div>
+  </div>
+</div>
+
+<script src="languages.json.js"></script>
 <script src="qr.js"></script>
 <script>
-const LANGUAGES = [
-  {code:"en", label:"English", native:"English"},
-  {code:"fr", label:"French", native:"Français"},
-  {code:"es", label:"Spanish", native:"Español"},
-  {code:"it", label:"Italian", native:"Italiano"},
-  {code:"de", label:"German", native:"Deutsch"},
-  {code:"pt", label:"Portuguese", native:"Português"},
-  {code:"ja", label:"Japanese", native:"日本語"},
-  {code:"zh", label:"Chinese", native:"中文"},
-  {code:"ko", label:"Korean", native:"한국어"},
-  {code:"th", label:"Thai", native:"ไทย"},
-  {code:"vi", label:"Vietnamese", native:"Tiếng Việt"},
-  {code:"ar", label:"Arabic", native:"العربية"},
-];
-const LANG_CODES = {};
-LANGUAGES.forEach(l => LANG_CODES[l.code] = true);
 const PHRASES = {
   en:"I am allergic to these foods. Please do not put them in my meal.",
   fr:"Je suis allergique à ces aliments. Merci de les exclure de mon repas.",
@@ -199,6 +215,85 @@ const ALLERGENS = [
 const BY_ID = {};
 ALLERGENS.forEach(a => BY_ID[a.id] = a);
 
+// --- 300-language support ------------------------------------------------
+// docs/languages.json.js carries {c, n, t} (code, English name, native name)
+// for every language; docs/lang/<code>.json.js carries its translations
+// (ui array, per-allergen names + watch-outs). Only the English pack is
+// assumed bundled; any other pack loads on demand and is also cached for
+// offline use by the service worker.
+const ALL_LANGS = (window.ALLERGY_LANGUAGES && window.ALLERGY_LANGUAGES.length) ? window.ALLERGY_LANGUAGES : [{c:"en",n:"English",t:"English"}];
+const RTL = new Set(["ar","fa","ur","he","ps","ug","yi","dv","sd"]);
+// EXACT English strings translated into every pack (same order as the
+// generator's UI_STRINGS list in tools/gen_languages.py).
+const UILIST = [
+ "Tap the allergens you're allergic to. Works offline.",
+ "Show any waiter what you can't eat, in their language.",
+ "Pick your allergens",
+ "Tap everything you're allergic to — one tap selects, another deselects.",
+ "Choose the local language",
+ "French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.",
+ "Show the red card",
+ "One tap gives the waiter a full-screen card with a QR they can scan.",
+ "Share by link or QR",
+ "Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.",
+ "GET STARTED",
+ "Your choices are saved in this browser only. Nothing is sent anywhere.",
+ "Language:",
+ "Show QR",
+ "Copy link",
+ "SHOW THE WAITER CARD",
+ "Select at least one allergen",
+ "{n} allergens selected",
+ "example dishes ▾",
+ "hide dishes ▴",
+ "Usually in:",
+ "Watch out:",
+ "ALLERGY ALERT",
+ "I am allergic to these foods. Please do not put them in my meal.",
+ "Scan to open this card on your phone",
+ "Share this allergy card",
+ "This QR code and link carry the full profile: allergens and language.",
+ "Close",
+ "Choose your language",
+ "Search languages…",
+ "Search allergens…",
+];
+const U_ROW = UILIST.length;
+const packFails = {};
+function packOf(code){ return (window.ALLERGY_LANG || {})[code] || null; }
+async function ensurePack(code){
+  if (!code || code === "en" || packOf(code)) return;
+  if ((packFails[code] || 0) >= 3) return;
+  try {
+    await new Promise((res, rej) => {
+      const s = document.createElement("script");
+      s.src = "lang/" + code + ".json.js";
+      s.onload = res;
+      s.onerror = rej;
+      document.head.appendChild(s);
+      setTimeout(rej, 10000);
+    });
+  } catch(e) { packFails[code] = (packFails[code] || 0) + 1; }
+}
+function langName(code){ const L = ALL_LANGS.find(l => l.c === code); return L ? L.t : code; }
+function uiPack(){ return packOf(state.ui || "en") || packOf("en"); }
+function T(enStr){
+  const i = UILIST.indexOf(enStr);
+  const p = uiPack();
+  if (i > -1 && p && p.ui && p.ui[i]) return p.ui[i];
+  return enStr;
+}
+function name(a, lang){
+  const p = packOf(lang);
+  if (p && p.al && p.al[a.id]) return p.al[a.id];
+  return a.names[lang] || a.names.en;
+}
+function watchText(a, lang){
+  const p = packOf(lang);
+  if (p && p.wa && p.wa[a.id]) return p.wa[a.id];
+  return a.watch;
+}
+
 function loadSelected(){
   // migrate profiles saved by the removed severity feature: keep the allergies, drop the levels
   try {
@@ -213,7 +308,9 @@ function loadSelected(){
 const state = {
   selected: loadSelected(),      // {id: true}
   lang: localStorage.getItem("allergy_card_lang") || "en",
+  ui: localStorage.getItem("allergy_card_ui") || "en",   // app language (the traveler's own)
   expanded: new Set(),
+  filter: "",                    // allergen search filter
   fromShare: false,              // arrived via ?a= link: show the card immediately, don't persist until edited
 };
 // Shared-card URL: ?a=peanuts,shellfish&lang=ja — the whole profile lives in the link (and in the QR).
@@ -237,13 +334,12 @@ if (demo) {
     state.fromShare = true;
   }
   const lg = params.get("lang");
-  if (lg && LANG_CODES[lg]) state.lang = lg;
+  if (lg) state.lang = String(lg).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 12) || "en";
 }
 function save(){
   localStorage.setItem("allergy_card_selected", JSON.stringify(state.selected));
   localStorage.setItem("allergy_card_lang", state.lang);
 }
-function name(a, lang){ return a.names[lang] || a.names.en; }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
 // The site is served from GitHub Pages; the Android app runs this same file
 // offline from file:///android_asset. Share links and the QR must always point
@@ -277,27 +373,87 @@ function copyLink(){
   }
 }
 
-function fillLangSelect(sel){
-  sel.innerHTML = LANGUAGES.map(l => `<option value="${l.code}" ${l.code===state.lang?"selected":""}>${l.native} — ${l.label}</option>`).join("");
+let pickerCb = null;
+function openPicker(cb){
+  pickerCb = cb;
+  document.getElementById("picker").classList.add("open");
+  document.getElementById("pickerSearch").value = "";
+  document.getElementById("pickerSearch").placeholder = T("Search languages…");
+  renderPickerRows("");
+  setTimeout(() => document.getElementById("pickerSearch").focus(), 50);
+}
+function renderPickerRows(q){
+  const needle = (q || "").toLowerCase().trim();
+  const list = ALL_LANGS.filter(l => !needle || l.t.toLowerCase().includes(needle) || l.n.toLowerCase().includes(needle) || l.c.includes(needle));
+  const rows = document.getElementById("pickerRows");
+  rows.innerHTML = list.map(l => `<div class="prow" data-c="${l.c}"><b>${esc(l.t)}</b><span>${esc(l.n)}</span></div>`).join("")
+    || '<div style="padding:12px;color:#777;font-size:13px">No languages match.</div>';
+  rows.querySelectorAll(".prow").forEach(r => r.addEventListener("click", () => {
+    const cb = pickerCb;
+    pickerCb = null;
+    document.getElementById("picker").classList.remove("open");
+    if (cb) cb(r.dataset.c);
+  }));
+}
+function syncLangButtons(){
+  document.getElementById("langBtn").textContent = langName(state.lang) + " ▾";
+  document.getElementById("cardLangBtn").textContent = langName(state.lang) + " ▾";
+  document.getElementById("uiBtn").textContent = "App: " + langName(state.ui || "en");
+}
+function applyUIText(){
+  document.querySelector("header p").textContent = T("Tap the allergens you're allergic to. Works offline.");
+  document.getElementById("langLabel").textContent = T("Language:");
+  document.getElementById("shareQr").textContent = T("Show QR");
+  document.getElementById("shareCopy").textContent = T("Copy link");
+  document.getElementById("aSearch").placeholder = T("Search allergens…");
+  document.getElementById("shareH3").textContent = T("Share this allergy card");
+  document.getElementById("shareP").textContent = T("This QR code and link carry the full profile: allergens and language.");
+  document.getElementById("shareCopyBtn").textContent = T("Copy link");
+  document.getElementById("shareClose").textContent = T("Close");
+  document.getElementById("pickerCancel").textContent = T("Close");
+  renderButton();
+}
+function setLang(v){
+  state.lang = v;
+  save();
+  ensurePack(v).then(() => {
+    syncLangButtons(); renderGrid();
+    if (document.getElementById("card").classList.contains("open")) openCard();
+  });
+  syncLangButtons();
+}
+function setUI(v){
+  state.ui = v || "en";
+  try { localStorage.setItem("allergy_card_ui", state.ui); } catch(e){}
+  ensurePack(state.ui).then(() => {
+    applyUIText(); renderGrid(); syncLangButtons();
+  });
 }
 
 function renderGrid(){
   const grid = document.getElementById("grid");
-  grid.innerHTML = ALLERGENS.map(a => {
+  const needle = (state.filter || "").toLowerCase().trim();
+  const uil = state.ui || "en";
+  const list = ALLERGENS.filter(a => {
+    if (!needle) return true;
+    return (name(a, uil) + " " + a.names.en + " " + a.id).toLowerCase().includes(needle);
+  });
+  document.getElementById("noRes").style.display = list.length ? "none" : "block";
+  grid.innerHTML = list.map(a => {
     const on = !!state.selected[a.id], exp = state.expanded.has(a.id);
     return `<div class="allergen ${on?"selected":""}" data-id="${a.id}">
       <div class="thumb">${a.emoji}</div>
       <div class="body">
         <div class="top">
           <div>
-            <div class="name">${esc(name(a, state.lang))}</div>
-            ${state.lang!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
+            <div class="name">${esc(name(a, uil))}</div>
+            ${uil!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
           </div>
           <div class="check">✓</div>
         </div>
-        <button class="more" data-id="${a.id}">${exp?"hide dishes ▴":"example dishes ▾"}</button>
-        ${exp ? `<div class="dishes"><b>Usually in:</b><br>${a.dishes.map(d=>"• "+esc(d)).join("<br>")}
-          <div class="watch">Watch out: ${esc(a.watch)}</div></div>` : ""}
+        <button class="more" data-id="${a.id}">${exp?esc(T("hide dishes ▴")):esc(T("example dishes ▾"))}</button>
+        ${exp ? `<div class="dishes"><b>${esc(T("Usually in:"))}</b><br>${a.dishes.map(d=>"• "+esc(d)).join("<br>")}
+          <div class="watch">${esc(T("Watch out:"))} ${esc(watchText(a, uil))}</div></div>` : ""}
       </div>
     </div>`;
   }).join("");
@@ -320,10 +476,15 @@ function renderGrid(){
 function renderButton(){
   const n = Object.keys(state.selected).length;
   document.getElementById("cardBtn").disabled = n === 0;
-  document.getElementById("count").textContent = n ? `${n} allergen${n>1?"s":""} selected` : "Select at least one allergen";
+  document.getElementById("cardBtn").textContent = T("SHOW THE WAITER CARD");
+  document.getElementById("count").textContent = n
+    ? T("{n} allergens selected").replace("{n}", n)
+    : T("Select at least one allergen");
 }
 function openCard(){
-  document.getElementById("phrase").textContent = PHRASES[state.lang] || PHRASES.en;
+  ensurePack(state.lang).then(() => {
+  const p = packOf(state.lang);
+  document.getElementById("phrase").textContent = (p && p.ui && p.ui[23]) || PHRASES[state.lang] || PHRASES.en;
   document.getElementById("phraseEn").textContent = state.lang==="en" ? "" : PHRASES.en;
   const sel = ALLERGENS.filter(a => state.selected[a.id]);
   document.getElementById("cardList").innerHTML = sel.map(a => `
@@ -336,8 +497,10 @@ function openCard(){
     </div>`).join("");
   const url = profileUrl();
   document.getElementById("cardQr").innerHTML = qrImg(url, 3);
-  document.getElementById("cardQrCap").textContent = SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
+  document.getElementById("cardQrCap").textContent = (p && p.ui && p.ui[25]) || SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
+  document.getElementById("card").setAttribute("dir", RTL.has(state.lang) ? "rtl" : "ltr");
   document.getElementById("card").classList.add("open");
+  });
 }
 function openShare(){
   const url = profileUrl();
@@ -353,23 +516,67 @@ document.getElementById("shareCopy").addEventListener("click", copyLink);
 document.getElementById("shareCopyBtn").addEventListener("click", copyLink);
 document.getElementById("shareClose").addEventListener("click", ()=>document.getElementById("share").classList.remove("open"));
 
-const langSel = document.getElementById("langSel"), cardLangSel = document.getElementById("cardLangSel");
-fillLangSelect(langSel); fillLangSelect(cardLangSel); cardLangSel.value = state.lang;
-function setLang(v){ state.lang = v; save(); renderGrid(); [langSel,cardLangSel].forEach(s=>s.value=v); if(document.getElementById("card").classList.contains("open")) openCard(); }
-langSel.addEventListener("change", e=>setLang(e.target.value));
-cardLangSel.addEventListener("change", e=>setLang(e.target.value));
+document.getElementById("langBtn").addEventListener("click", () => openPicker(setLang));
+document.getElementById("cardLangBtn").addEventListener("click", () => openPicker(setLang));
+document.getElementById("uiBtn").addEventListener("click", () => openPicker(setUI));
+document.getElementById("pickerSearch").addEventListener("input", e => renderPickerRows(e.target.value));
+document.getElementById("pickerCancel").addEventListener("click", () => { pickerCb = null; document.getElementById("picker").classList.remove("open"); });
+document.getElementById("picker").addEventListener("click", e => { if (e.target.id === "picker") { pickerCb = null; e.target.classList.remove("open"); } });
+document.getElementById("aSearch").addEventListener("input", e => { state.filter = e.target.value; renderGrid(); });
 
 // onboarding: first visit only (skipped when arriving through a shared-card link)
+function renderObRows(q){
+  const needle = (q || "").toLowerCase().trim();
+  const list = ALL_LANGS.filter(l => !needle || l.t.toLowerCase().includes(needle) || l.n.toLowerCase().includes(needle) || l.c.includes(needle));
+  const rows = document.getElementById("obLangRows");
+  rows.innerHTML = list.map(l => `<div class="prow" data-c="${l.c}"><b>${esc(l.t)}</b><span>${esc(l.n)}</span></div>`).join("")
+    || '<div style="padding:12px;color:#777;font-size:13px">No match.</div>';
+  rows.querySelectorAll(".prow").forEach(r => r.addEventListener("click", () => obLangPick(r.dataset.c)));
+}
+function obLangPick(code){
+  state.ui = code;
+  try { localStorage.setItem("allergy_card_ui", code); } catch(e){}
+  ensurePack(code).then(() => {
+    document.getElementById("obLang").style.display = "none";
+    document.getElementById("obSteps").style.display = "block";
+    document.getElementById("obSub").textContent = T("Show any waiter what you can't eat, in their language.");
+    document.getElementById("s1t").textContent = T("Pick your allergens");
+    document.getElementById("s1d").textContent = T("Tap everything you're allergic to — one tap selects, another deselects.");
+    document.getElementById("s2t").textContent = T("Choose the local language");
+    document.getElementById("s2d").textContent = T("French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.");
+    document.getElementById("s3t").textContent = T("Show the red card");
+    document.getElementById("s3d").textContent = T("One tap gives the waiter a full-screen card with a QR they can scan.");
+    document.getElementById("s4t").textContent = T("Share by link or QR");
+    document.getElementById("s4d").textContent = T("Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.");
+    document.getElementById("onboardGo").textContent = T("GET STARTED");
+    document.getElementById("obFine").textContent = T("Your choices are saved in this browser only. Nothing is sent anywhere.");
+    applyUIText(); renderGrid(); syncLangButtons();
+  });
+}
 if (!localStorage.getItem("allergy_card_onboarded") && !state.fromShare) {
+  if (localStorage.getItem("allergy_card_ui")) {
+    // already picked a language before this version: skip the chooser, show the steps
+    obLangPick(localStorage.getItem("allergy_card_ui"));
+    document.getElementById("obLang").style.display = "none";
+  } else {
+    document.getElementById("obSteps").style.display = "none";
+    renderObRows("");
+  }
   document.getElementById("onboard").classList.add("open");
 }
+document.getElementById("obLangSearch").addEventListener("input", e => renderObRows(e.target.value));
+document.getElementById("obSkip").addEventListener("click", () => obLangPick("en"));
 document.getElementById("onboardGo").addEventListener("click", ()=>{
   localStorage.setItem("allergy_card_onboarded", "1");
   document.getElementById("onboard").classList.remove("open");
   if (state.fromShare) openCard();
 });
 
-renderGrid(); renderButton();
+syncLangButtons(); applyUIText(); renderGrid();
+if (state.fromShare || state.lang !== "en" || state.ui !== "en") {
+  ensurePack(state.lang); ensurePack(state.ui || "en");
+  (async () => { await ensurePack(state.ui || "en"); applyUIText(); renderGrid(); })();
+}
 if (demo === "card-ja" || state.fromShare) openCard();
 
 // offline: cache everything locally after first load

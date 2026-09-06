@@ -30,13 +30,18 @@ Change something once in `docs/`, and both the site and the app get it.
 
 - 16 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
   lentils, fish, shellfish, sesame, mustard, celery, sulfites, lupin), each shown with a
-  big emoji so the card reads at a glance.
+  big emoji so the card reads at a glance. A search bar filters the list instantly.
+- **188 languages.** On first launch you pick your own language for the app itself —
+  the interface follows it from then on. The card language (the one the waiter sees)
+  is a separate, searchable picker covering everything from French and Japanese to
+  Quechua, Cantonese and Amharic.
 - A shareable card link and QR code: the whole profile (allergens, language) is
   encoded in the URL, so the waiter can scan the QR and carry the card to the kitchen
   on their own phone.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
-- A full-screen, high-contrast "show the waiter" card.
+- A full-screen, high-contrast "show the waiter" card, with RTL support for
+  right-to-left scripts.
 - A first-launch walkthrough showing new users the three things to do:
   pick allergens, choose a language, show the red card.
 
@@ -52,8 +57,14 @@ Change something once in `docs/`, and both the site and the app get it.
 
 ## Languages
 
-English, French, Spanish, Italian, German, Portuguese, Japanese, Chinese,
-Korean, Thai, Vietnamese, Arabic.
+188 languages, generated once and baked into static files
+(`docs/languages.json.js` for the picker list, `docs/lang/<code>.json.js` per
+language). Machine translation is done ahead of time by
+[`tools/gen_languages.py`](tools/gen_languages.py), so the app itself never
+needs the network to find a language — re-run the script to add or refresh
+languages, it skips what's already on disk. English is always bundled; any other
+pack loads on first use and is then cached for offline use (service worker on
+the web build, plain files in the APK).
 
 ## Build (Android)
 
