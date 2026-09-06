@@ -11,7 +11,7 @@ browser, no download needed.
 ## One codebase
 
 Everything lives in [`docs/`](docs/index.html): one single-page app in plain HTML/JS —
-allergen emoji, languages, shareable URLs and the QR code.
+allergen emoji, languages, and shareable URLs.
 
 - The **website** is those files served as-is (GitHub Pages from `main:/docs`).
 - The **Android app** is a bare WebView shell (`app/…/MainActivity.kt`, ~50 lines)
@@ -42,15 +42,15 @@ Change something once in `docs/`, and both the site and the app get it.
   The waiter's language is a separate, searchable picker covering everything from
   French and Japanese to Quechua, Cantonese and Amharic. Dialogs close with a
   simple X, and on Android the back button closes the top dialog first.
-- A shareable card link and QR code: the whole profile (allergens, custom entries,
-  language) is encoded in the URL, so the waiter can scan the QR and carry the card
-  to the kitchen on their own phone. Older links keep working — classic `?a=ids&lang=xx`
+- A shareable card link: the whole profile (allergens, custom entries, language)
+  is encoded in the URL, so copying the link lets anyone open the identical card
+  on their own phone. Older links keep working — classic `?a=ids&lang=xx`
   links (including the retired id:level format) open exactly as before.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
-- A full-screen, high-contrast "show the waiter" card — one line per allergen,
-  QR beneath to carry the card to the kitchen, and a tap-to-copy 🔗 button —
-  with RTL support for right-to-left scripts.
+- A full-screen, high-contrast "show the waiter" card — big, one line per
+  allergen, no clutter — with a tap-to-copy 🔗 button at the bottom for
+  sharing, and RTL support for right-to-left scripts.
 - The ⚙️ settings gear in the title bar opens a small settings dialog: app
   language (one more tap to the full list) and an "allergen emojis" switch
   for a text-only layout.
@@ -105,8 +105,6 @@ app — always double-check with the restaurant and carry your medication.
 ## Web preview (this repo)
 
 The preview site lives in [`docs/`](docs/index.html) — all allergens, languages,
-example dishes, shareable URLs with a QR code, and the red waiter
+example dishes, shareable URLs, and the red waiter
 card, with choices persisted in `localStorage` and a service worker
-(`docs/sw.js`) for offline use. QR codes are generated on-device by the
-bundled open-source [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator)
-library (`docs/qr.js`). The site auto-deploys from `main:/docs` on every push.
+(`docs/sw.js`) for offline use. The site auto-deploys from `main:/docs` on every push.

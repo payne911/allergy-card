@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Allergy Card — show the waiter, in their language</title>
-<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card — in their language. Everything lives in a shareable link and QR code. Works offline.">
+<meta name="description" content="Pick your allergens, pick a language, and show the waiter a big red card — in their language. Everything lives in a shareable link. Works offline.">
 <style>
   :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff; --sel:#fff0f0; --line:#e0dada; }
   * { box-sizing:border-box; }
@@ -45,22 +45,16 @@
   .overlay h2 { font-size:38px; margin:18px 0 6px; font-weight:800; }
   .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
-  .acompact { background:#fff; color:var(--ink); border-radius:16px; margin:14px 0; padding:8px 14px; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
-  .acompact .line { display:flex; align-items:center; gap:12px; padding:11px 2px; font-size:21px; font-weight:800; border-bottom:1px solid #efe6e6; }
+  .acompact { background:#fff; color:var(--ink); border-radius:16px; margin:14px 0; padding:6px 14px; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
+  .acompact .line { display:flex; align-items:center; gap:10px; padding:5px 2px; font-size:16px; font-weight:600; border-bottom:1px solid #efe6e6; }
   .acompact .line:last-of-type { border-bottom:0; }
-  .acompact .line .em { font-size:26px; flex:0 0 auto; }
-  .acompact .line .en { font-size:13.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
-  #cardLinkBtn { display:block; margin:16px auto 2px; font-size:34px; line-height:1; background:#fff; border:2px solid var(--line); border-radius:18px; padding:10px 22px; cursor:pointer; }
-  #cardLinkBtn:active { background:#eee; }
-  .cardqr { margin:22px auto 6px; background:#fff; border-radius:14px; padding:12px; width:max-content; }
-  .cardqr .cap { color:var(--ink); font-size:12.5px; text-align:center; padding-top:6px; max-width:220px; }
-  /* share modal */
-  #share { position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:15; display:none; align-items:center; justify-content:center; padding:20px; }
-  #share.open { display:flex; }
-  #share .box { background:#fff; color:var(--ink); border-radius:16px; padding:20px; max-width:420px; width:100%; text-align:center; max-height:90vh; overflow-y:auto; }
-  #share .box h3 { margin:0 0 6px; }
-  #share .url { font-size:12px; color:var(--soft); word-break:break-all; background:#f2eeee; border-radius:8px; padding:8px; margin:10px 0; }
-  #share button:active { background:#ddd; }
+  .acompact .line .em { font-size:22px; flex:0 0 auto; }
+  .acompact .line .nm { white-space:pre-line; }
+  .acompact .line .en { font-size:12.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
+  .base-cardbottom { display:flex; justify-content:flex-end; align-items:center; width:100%; padding:8px 2px 0; }
+  #cardLinkBtn { border:0; background:none; font-size:28px; line-height:1; color:var(--red); padding:6px 4px; cursor:pointer; }
+  #cardLinkBtn:active { opacity:.7; }
+  /* modals */
   /* onboarding */
   #onboard { position:fixed; inset:0; background:#fff; z-index:20; overflow-y:auto; display:none; }
   #onboard.open { display:block; }
@@ -88,7 +82,7 @@
   .modalx { position:absolute; top:8px; right:10px; border:0; background:none; font-size:20px; font-weight:400;
     color:#888; cursor:pointer; padding:2px 8px; line-height:1.2; }
   .modalx:active { color:#333; }
-  #share .box, .picker .pbox { position:relative; }
+  .picker .pbox { position:relative; }
   .warn { font-size:72px; line-height:1; margin:14px auto 0; }
   .setrow { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:15px 4px; border-top:1px solid var(--line); cursor:pointer; }
   .setrow:first-of-type { border-top:0; }
@@ -122,8 +116,8 @@
     <div id="obSteps" style="display:none">
       <div class="step"><div class="num">1</div><div><b id="s1t">Pick your allergens</b><span id="s1d">Tap everything you're allergic to — one tap selects, another deselects.</span></div></div>
       <div class="step"><div class="num">2</div><div><b id="s2t">Choose the local language</b><span id="s2d">French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.</span></div></div>
-      <div class="step"><div class="num">3</div><div><b id="s3t">Show the red card</b><span id="s3d">One tap gives the waiter a full-screen card with a QR they can scan.</span></div></div>
-      <div class="step"><div class="num">4</div><div><b id="s4t">Share by link or QR</b><span id="s4d">Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.</span></div></div>
+      <div class="step"><div class="num">3</div><div><b id="s3t">Show the red card</b><span id="s3d">One tap presents a full-screen card the whole kitchen can read.</span></div></div>
+      <div class="step"><div class="num">4</div><div><b id="s4t">Share by link</b><span id="s4d">Your whole profile is encoded in the card's link. Copy it and anyone can open the card on their own phone.</span></div></div>
       <button id="onboardGo">GET STARTED</button>
       <p class="fine" id="obFine">Your choices are saved in this browser only. Nothing is sent anywhere.</p>
     </div>
@@ -163,8 +157,9 @@
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
     <div id="cardList"></div>
-    <div class="cardqr"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div></div>
-    <button id="cardLinkBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
+    <div class="base-cardbottom">
+      <button id="cardLinkBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
+    </div>
   </div>
 </div>
 
@@ -196,8 +191,8 @@
     <div style="font-weight:700;" id="dlgTitle">Add</div>
     <div style="color:#666;font-size:13px;margin:2px 0 8px;" id="dlgSub">Add a custom restriction</div>
     <div id="cutom"></div>
-    <input id="nm" type="text" style="width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;" placeholder="Name it exactly as you'd say it">
-    <div id="emoLbl" style="color:#666;font-size:13px;margin:10px 0 2px;">Pick an emoji</div>
+    <textarea id="nm" rows="3" style="width:100%;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;resize:vertical;" placeholder="Name it exactly as you'd say it"></textarea>
+    <div id="emoLbl" style="color:#666;font-size:13px;margin:10px 0 2px;">Emoji (optional)</div>
     <input id="em" type="text" maxlength="8" placeholder="😀" aria-label="custom emoji">
     <div id="emoGrid"></div>
     <div style="text-align:right;margin-top:8px"><button class="linkbtn" id="dlgSave" type="button">Save</button></div>
@@ -205,7 +200,6 @@
 </div>
 
 <script src="languages.json.js"></script>
-<script src="qr.js"></script>
 <script>
 const PHRASES = {
   en:"I am allergic to these foods. Please do not put them in my meal.",
@@ -220,20 +214,6 @@ const PHRASES = {
   th:"ฉันแพ้อาหารเหล่านี้ กรุณาอย่าใส่ในอาหารของฉัน",
   vi:"Tôi bị dị ứng với những thức ăn này. Vui lòng không cho vào món ăn của tôi.",
   ar:"لدي حساسية من هذه الأطعمة. يرجى عدم وضعها في وجبتي.",
-};
-const SCAN_CAPTION = {
-  en:"Scan to open this card on your phone",
-  fr:"Scanner pour ouvrir cette carte",
-  es:"Escanee para abrir esta tarjeta",
-  it:"Scansiona per aprire questa carta",
-  de:"Scannen, um diese Karte zu öffnen",
-  pt:"Digitalize para abrir este cartão",
-  ja:"スキャンしてこのカードを開く",
-  zh:"扫码打开此卡片",
-  ko:"스캔하면 이 카드가 열립니다",
-  th:"สแกนเพื่อเปิดการ์ดนี้",
-  vi:"Quét để mở thẻ này",
-  ar:"امسح لفتح هذه البطاقة",
 };
 const ALLERGENS = [
   {id:"peanuts",emoji:"🥜",dishes:["Pad Thai","Satay skewers","Peanut butter cookies","Mole sauce"],watch:"Often hidden in Asian sauces, garnishes, and desserts.",names:{en:"peanuts",fr:"arachides",es:"cacahuetes / maní",it:"arachidi",de:"Erdnüsse",pt:"amendoim",ja:"ピーナッツ",zh:"花生",ko:"땅콩",th:"ถั่วลิสง",vi:"đậu phộng",ar:"فول سوداني"}},
@@ -303,9 +283,9 @@ const UILIST = [
  "Choose the local language",
  "French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.",
  "Show the red card",
- "One tap gives the waiter a full-screen card with a QR they can scan.",
- "Share by link or QR",
- "Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.",
+ "One tap presents a full-screen card the whole kitchen can read.",
+ "Share by link",
+ "Your whole profile is encoded in the card's link. Copy it and anyone can open the card on their own phone.",
  "GET STARTED",
  "Your choices are saved in this browser only. Nothing is sent anywhere.",
  "Waiter's language:",
@@ -329,7 +309,7 @@ const UILIST = [
  "Add your own +",
  "Add a custom restriction",
  "Name it exactly as you'd say it",
- "Pick an emoji",
+ "Emoji (optional)",
  "Save",
  "Add",
  "Edit",
@@ -402,7 +382,7 @@ const state = {
   filter: "",                    // allergen search filter
   fromShare: false,              // arrived via ?a= link: show the card immediately, don't persist until edited
 };
-// Shared-card URL: ?a=peanuts,shellfish&lang=ja — the whole profile lives in the link (and in the QR).
+// Shared-card URL: ?a=peanuts,shellfish&lang=ja — the whole profile lives in the link.
 // Old "id:level" links still open fine; the level part is simply ignored.
 // ?demo=select | card-ja — reproducible states used for README screenshots; harmless in normal use
 const params = new URLSearchParams(location.search);
@@ -430,8 +410,8 @@ function save(){
 }
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
 // The site is served from GitHub Pages; the Android app runs this same file
-// offline from file:///android_asset. Share links and the QR must always point
-// at the public URL so a kitchen's phone can open them.
+// offline from file:///android_asset. Share links must always point at the
+// public URL so a kitchen's phone can open them.
 const CANONICAL_BASE = "https://payne911.github.io/allergy-card/";
 function profileUrl(){
   const slug = Object.keys(state.selected).filter(id => BY_ID[id]).sort().join(",");
@@ -443,14 +423,6 @@ function profileUrl(){
   });
   u.search = q;
   return u.toString();
-}
-function qrImg(url, cell){
-  try {
-    const qr = qrcode(0, "M");
-    qr.addData(url, "Byte");
-    qr.make();
-    return qr.createImgTag(cell || 4, 8);
-  } catch(e){ return ""; }
 }
 function copyLink(){
   const url = profileUrl();
@@ -651,9 +623,8 @@ function openCard(){
       <span class="nm">${esc(d.name)}</span>
     </div>`).join("");
   document.getElementById("cardList").innerHTML = `<div class="acompact">${lines}</div>`;
-  const url = profileUrl();
-  document.getElementById("cardQr").innerHTML = qrImg(url, 3);
-  document.getElementById("cardQrCap").textContent = (p && p.ui && p.ui[25]) || SCAN_CAPTION[state.lang] || SCAN_CAPTION.en;
+  // no QR and no printed URL on the card: a tap-to-copy 🔗 button does the
+  // sharing, and the card stays fully offline-readable at a glance.
   document.getElementById("card").setAttribute("dir", RTL.has(state.lang) ? "rtl" : "ltr");
   openDlg("card");
   });
@@ -673,7 +644,7 @@ function openAddDlg(edit){
   em.value = edit ? edit.emoji : "";
   const grid = document.getElementById("emoGrid");
   grid.innerHTML = "";
-  document.getElementById("emoLbl").textContent = T("Pick an emoji");
+  document.getElementById("emoLbl").textContent = T("Emoji (optional)");
   EMOJIS.forEach(e => {
     const b = document.createElement("button");
     b.type = "button"; b.className = "emopick"; b.textContent = e;
@@ -790,9 +761,9 @@ function obLangPick(code){
     document.getElementById("s2t").textContent = T("Choose the local language");
     document.getElementById("s2d").textContent = T("French in Montréal, Japanese in Tokyo, Thai in Bangkok — the card follows automatically.");
     document.getElementById("s3t").textContent = T("Show the red card");
-    document.getElementById("s3d").textContent = T("One tap gives the waiter a full-screen card with a QR they can scan.");
-    document.getElementById("s4t").textContent = T("Share by link or QR");
-    document.getElementById("s4d").textContent = T("Your whole profile is encoded in the card's link. Show the QR and the waiter can carry the card to the kitchen on their own phone.");
+    document.getElementById("s3d").textContent = T("One tap presents a full-screen card the whole kitchen can read.");
+    document.getElementById("s4t").textContent = T("Share by link");
+    document.getElementById("s4d").textContent = T("Your whole profile is encoded in the card's link. Copy it and anyone can open the card on their own phone.");
     document.getElementById("onboardGo").textContent = T("GET STARTED");
     document.getElementById("obFine").textContent = T("Your choices are saved in this browser only. Nothing is sent anywhere.");
     applyUIText(); renderGrid(); syncLangButtons();
