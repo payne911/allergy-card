@@ -1,4 +1,4 @@
-const CACHE = "allergy-card-v1";
+const CACHE = "allergy-card-v2";
 const FILES = ["./", "./index.html", "./manifest.webmanifest"];
 
 self.addEventListener("install", e => {

@@ -120,6 +120,42 @@ val ALLERGENS = listOf(
         ),
     ),
     Allergen(
+        id = "peas",
+        emoji = "🫛",
+        dishes = listOf("Split pea soup", "Pea & ham soup", "Risi e bisi", "Matar paneer"),
+        watchOut = "Pea protein is now common in meat substitutes and protein snacks. Peas also mix invisibly into fried rice, pilafs, and soups.",
+        names = mapOf(
+            "en" to "peas", "fr" to "pois", "es" to "guisantes",
+            "it" to "piselli", "de" to "Erbsen", "pt" to "ervilhas",
+            "ja" to "グリーンピース", "zh" to "豌豆", "ko" to "완두콩",
+            "th" to "ถั่วลันเตา", "vi" to "đậu Hà Lan", "ar" to "بازلاء",
+        ),
+    ),
+    Allergen(
+        id = "chickpeas",
+        emoji = "🧆",
+        dishes = listOf("Hummus", "Falafel", "Chana masala", "Pakora fritters"),
+        watchOut = "Hummus arrives unasked with many mezze and wraps. Chickpea flour (gram / besan) thickens fritters like pakora and some batters.",
+        names = mapOf(
+            "en" to "chickpeas", "fr" to "pois chiches", "es" to "garbanzos",
+            "it" to "ceci", "de" to "Kichererbsen", "pt" to "grão-de-bico",
+            "ja" to "ひよこ豆", "zh" to "鹰嘴豆", "ko" to "병아리콩",
+            "th" to "ถั่วชิกพี", "vi" to "đậu gà", "ar" to "حمص",
+        ),
+    ),
+    Allergen(
+        id = "lentils",
+        emoji = "🍛",
+        dishes = listOf("Dal curries", "Lentil soup", "Mujadara", "Mercimek köfte"),
+        watchOut = "Dal and lentil soups rarely say 'lentil' on the menu. Lentils also stand in for meat in many vegan patties and sauces.",
+        names = mapOf(
+            "en" to "lentils", "fr" to "lentilles", "es" to "lentejas",
+            "it" to "lenticchie", "de" to "Linsen", "pt" to "lentilhas",
+            "ja" to "レンズ豆", "zh" to "扁豆", "ko" to "렌틸콩",
+            "th" to "ถั่วเลนทิล", "vi" to "đậu lăng", "ar" to "عدس",
+        ),
+    ),
+    Allergen(
         id = "fish",
         emoji = "🐟",
         dishes = listOf("Bouillabaisse", "Sushi", "Fish sauce dishes", "Caesar dressing"),
