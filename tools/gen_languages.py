@@ -61,6 +61,7 @@ UI_STRINGS = [
  "Settings",
  "App language",
  "Show allergen emojis",
+ "QR to share",
 ]
 
 # ---- language list: ISO 639-1 + major 639-2/3 supplements -----------------

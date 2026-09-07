@@ -47,14 +47,25 @@
   .overlay .phrase { font-size:21px; font-weight:500; }
   .overlay .phrase-en { font-size:15px; color:#ffd6d6; margin-top:6px; }
   .acompact { background:#fff; color:var(--ink); border-radius:16px; margin:14px 0; padding:6px 14px; text-align:left; box-shadow:0 2px 10px rgba(0,0,0,.25); }
-  .acompact .line { display:flex; align-items:center; gap:10px; padding:5px 2px; font-size:16px; font-weight:600; border-bottom:1px solid #efe6e6; }
+  .acompact .line { display:flex; align-items:center; gap:10px; padding:6px 2px; font-size:19px; font-weight:600; border-bottom:1px solid #efe6e6; }
   .acompact .line:last-of-type { border-bottom:0; }
-  .acompact .line .em { font-size:22px; flex:0 0 auto; }
+  .acompact .line .em { font-size:26px; flex:0 0 auto; }
   .acompact .line .nm { white-space:pre-line; }
-  .acompact .line .en { font-size:12.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
+  .acompact .line .en { font-size:13.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
   .base-cardbottom { display:flex; justify-content:flex-end; align-items:center; width:100%; padding:8px 2px 0; }
-  .cardqr { margin:16px auto 4px; background:#fff; border-radius:14px; padding:12px; width:max-content; max-width:100%; }
-  .cardqr .cap { color:#2b2b2b; font-size:12.5px; font-weight:600; text-align:center; padding-top:6px; max-width:220px; }
+  .cardqr { margin:14px 0 4px; background:#fff; color:var(--ink); border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,.25); overflow:hidden; }
+  .cardqr .qrhead { display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer; user-select:none; }
+  .cardqr .qrhead .t { font-size:16px; font-weight:700; text-align:left; }
+  .cardqr .qrhead .sp { flex:1 1 auto; }
+  #qrCopyBtn { border:0; background:none; font-size:24px; line-height:1; padding:4px 2px; cursor:pointer; }
+  #qrCopyBtn:active { opacity:.7; }
+  .cardqr .qrchev { color:#777; font-size:13px; transition:transform .15s ease; }
+  .cardqr.open .qrchev { transform:rotate(180deg); }
+  .cardqr .qrbody { display:none; padding:0 12px 12px; text-align:center; }
+  .cardqr.open .qrbody { display:block; }
+  .cardqr .qrbox { margin:2px auto 0; width:max-content; max-width:100%; }
+  .cardqr .cap { color:#2b2b2b; font-size:12.5px; font-weight:600; text-align:center; padding-top:6px; max-width:220px; margin:0 auto; }
+  .cardqr .cap2 { color:#777; font-size:11.5px; font-weight:400; text-align:center; padding-top:3px; max-width:230px; margin:0 auto; }
   #cardLinkBtn { border:0; background:none; font-size:28px; line-height:1; color:var(--red); padding:6px 4px; cursor:pointer; }
   #cardLinkBtn:active { opacity:.7; }
   /* modals */
@@ -160,7 +171,17 @@
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
     <div id="cardList"></div>
-    <div class="cardqr"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div></div>
+    <div class="cardqr" id="cardQrWrap">
+      <div class="qrhead" id="qrHead" role="button" tabindex="0" aria-expanded="false">
+        <span class="t" id="qrTitle">QR to share</span>
+        <span class="sp"></span>
+        <button id="qrCopyBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
+        <span class="qrchev" aria-hidden="true">▾</span>
+      </div>
+      <div class="qrbody" id="qrBody">
+        <div class="qrbox"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div><div class="cap2" id="cardQrCap2"></div></div>
+      </div>
+    </div>
     <div class="base-cardbottom">
       <button id="cardLinkBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
     </div>
@@ -324,6 +345,7 @@ const UILIST = [
  "Settings",
  "App language",
  "Show allergen emojis",
+ "QR to share",
 ];
 const U_ROW = UILIST.length;
 const packFails = {};
@@ -385,6 +407,7 @@ const state = {
   showEmojis: localStorage.getItem("allergy_card_emojis") !== "0",  // settings: allergen emojis on/off
   expanded: new Set(),
   filter: "",                    // allergen search filter
+  qrOpen: false,                 // waiter-card QR disclosure: collapsed by default, toggle in the card header
   fromShare: false,              // arrived via ?a= link: show the card immediately, don't persist until edited
 };
 // Shared-card URL: ?a=peanuts,shellfish&lang=ja — the whole profile lives in the link.
@@ -534,6 +557,8 @@ function applyUIText(){
   document.getElementById("addOwn").textContent = T("Add your own +");
   document.getElementById("cardLinkBtn").title = T("Copy link");
   document.getElementById("cardLinkBtn").setAttribute("aria-label", T("Copy link"));
+  document.getElementById("qrCopyBtn").title = T("Copy link");
+  document.getElementById("qrCopyBtn").setAttribute("aria-label", T("Copy link"));
   renderSettings();
   renderButton();
 }
@@ -653,13 +678,25 @@ function openCard(){
       <span class="nm">${esc(d.name)}</span>
     </div>`).join("");
   document.getElementById("cardList").innerHTML = `<div class="acompact">${lines}</div>`;
-  // QR encodes profileUrl() exactly; caption follows the WAITER language so
-  // the person holding the card knows what the square is for.
+  // QR lives in a collapsible "QR to share" strip (collapsed by default). It
+  // encodes profileUrl() exactly; the strip title and the caption under the
+  // code follow the WAITER language, with the APP-language caption added
+  // below so the traveler knows what it says too.
   const qurl = profileUrl();
   document.getElementById("cardQr").innerHTML = qrImg(qurl, 3);
   const wp = packOf(state.lang);
-  document.getElementById("cardQrCap").textContent = (wp && wp.ui && wp.ui[24]) || "Scan to open this card on your phone";
-  document.querySelector(".cardqr").style.display = qurl && document.getElementById("cardQr").innerHTML ? "" : "none";
+  const cap1 = (wp && wp.ui && wp.ui[24]) || "Scan to open this card on your phone";
+  document.getElementById("cardQrCap").textContent = cap1;
+  document.getElementById("qrTitle").textContent = (wp && wp.ui && wp.ui[43]) || "QR to share";
+  const ap = packOf(state.ui) || packOf("en");
+  const cap2 = (ap && ap.ui && ap.ui[24]) || "Scan to open this card on your phone";
+  const cap2El = document.getElementById("cardQrCap2");
+  if (cap2 !== cap1) { cap2El.textContent = cap2; cap2El.style.display = ""; }
+  else { cap2El.textContent = ""; cap2El.style.display = "none"; }
+  const wrap = document.getElementById("cardQrWrap");
+  wrap.classList.toggle("open", state.qrOpen);
+  document.getElementById("qrHead").setAttribute("aria-expanded", state.qrOpen ? "true" : "false");
+  wrap.style.display = qurl && document.getElementById("cardQr").innerHTML ? "" : "none";
   document.getElementById("card").setAttribute("dir", RTL.has(state.lang) ? "rtl" : "ltr");
   openDlg("card");
   });
@@ -744,6 +781,27 @@ document.getElementById("dlgSave").addEventListener("click", () => {
 
 document.getElementById("cardClose").addEventListener("click", () => closeDlg("card"));
 document.getElementById("cardBtn").addEventListener("click", openCard);
+// QR collapsible: plain tap toggle, plus keyboard Enter/Space (no history
+// entry — back must keep closing the topmost overlay, not this strip).
+function qrToggle(){
+  state.qrOpen = !state.qrOpen;
+  const wrap = document.getElementById("cardQrWrap");
+  wrap.classList.toggle("open", state.qrOpen);
+  document.getElementById("qrHead").setAttribute("aria-expanded", state.qrOpen ? "true" : "false");
+}
+document.getElementById("qrHead").addEventListener("click", qrToggle);
+document.getElementById("qrHead").addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); qrToggle(); }
+});
+let qrFlash = null;
+document.getElementById("qrCopyBtn").addEventListener("click", e => {
+  e.stopPropagation();   // copy, don't toggle the strip
+  copyLink();
+  const b = document.getElementById("qrCopyBtn");
+  b.textContent = "✓";
+  clearTimeout(qrFlash);
+  qrFlash = setTimeout(() => { b.textContent = "🔗"; }, 900);
+});
 let linkFlash = null;
 document.getElementById("cardLinkBtn").addEventListener("click", () => {
   copyLink();
