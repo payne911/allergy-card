@@ -52,22 +52,19 @@
   .acompact .line .em { font-size:26px; flex:0 0 auto; }
   .acompact .line .nm { white-space:pre-line; }
   .acompact .line .en { font-size:13.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
-  .base-cardbottom { display:flex; justify-content:flex-end; align-items:center; width:100%; padding:8px 2px 0; }
   .cardqr { margin:14px 0 4px; background:#fff; color:var(--ink); border-radius:16px; box-shadow:0 2px 10px rgba(0,0,0,.25); overflow:hidden; }
   .cardqr .qrhead { display:flex; align-items:center; gap:10px; padding:13px 14px; cursor:pointer; user-select:none; }
   .cardqr .qrhead .t { font-size:16px; font-weight:700; text-align:left; }
   .cardqr .qrhead .sp { flex:1 1 auto; }
   #qrCopyBtn { border:0; background:none; font-size:24px; line-height:1; padding:4px 2px; cursor:pointer; }
   #qrCopyBtn:active { opacity:.7; }
-  .cardqr .qrchev { color:#777; font-size:13px; transition:transform .15s ease; }
+  .cardqr .qrchev { color:#555; font-size:20px; transition:transform .15s ease; }
   .cardqr.open .qrchev { transform:rotate(180deg); }
   .cardqr .qrbody { display:none; padding:0 12px 12px; text-align:center; }
   .cardqr.open .qrbody { display:block; }
   .cardqr .qrbox { margin:2px auto 0; width:max-content; max-width:100%; }
   .cardqr .cap { color:#2b2b2b; font-size:12.5px; font-weight:600; text-align:center; padding-top:6px; max-width:220px; margin:0 auto; }
   .cardqr .cap2 { color:#777; font-size:11.5px; font-weight:400; text-align:center; padding-top:3px; max-width:230px; margin:0 auto; }
-  #cardLinkBtn { border:0; background:none; font-size:28px; line-height:1; color:var(--red); padding:6px 4px; cursor:pointer; }
-  #cardLinkBtn:active { opacity:.7; }
   /* modals */
   /* onboarding */
   #onboard { position:fixed; inset:0; background:#fff; z-index:20; overflow-y:auto; display:none; }
@@ -182,8 +179,7 @@
         <div class="qrbox"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div><div class="cap2" id="cardQrCap2"></div></div>
       </div>
     </div>
-    <div class="base-cardbottom">
-      <button id="cardLinkBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
+      </div>
     </div>
   </div>
 </div>
@@ -555,8 +551,6 @@ function applyUIText(){
   document.getElementById("langLabel").textContent = T("Waiter's language:");
   document.getElementById("aSearch").placeholder = T("Search allergens…");
   document.getElementById("addOwn").textContent = T("Add your own +");
-  document.getElementById("cardLinkBtn").title = T("Copy link");
-  document.getElementById("cardLinkBtn").setAttribute("aria-label", T("Copy link"));
   document.getElementById("qrCopyBtn").title = T("Copy link");
   document.getElementById("qrCopyBtn").setAttribute("aria-label", T("Copy link"));
   renderSettings();
@@ -801,14 +795,6 @@ document.getElementById("qrCopyBtn").addEventListener("click", e => {
   b.textContent = "✓";
   clearTimeout(qrFlash);
   qrFlash = setTimeout(() => { b.textContent = "🔗"; }, 900);
-});
-let linkFlash = null;
-document.getElementById("cardLinkBtn").addEventListener("click", () => {
-  copyLink();
-  const b = document.getElementById("cardLinkBtn");
-  b.textContent = "✓";
-  clearTimeout(linkFlash);
-  linkFlash = setTimeout(() => { b.textContent = "🔗"; }, 900);
 });
 document.getElementById("settingsBtn").addEventListener("click", openSettings);
 document.getElementById("settingsX").addEventListener("click", () => closeDlg("settings"));
