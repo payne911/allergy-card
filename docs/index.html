@@ -8,6 +8,7 @@
 <style>
   :root { --red:#B00020; --ink:#1b1b1b; --soft:#666; --card:#fff; --sel:#fff0f0; --line:#e0dada; }
   * { box-sizing:border-box; }
+  html,body { overscroll-behavior-y:none; }
   body { margin:0; font-family:-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif; color:var(--ink); background:#f7f4f4; padding-bottom:120px; }
   header { position:sticky; top:0; background:var(--red); color:#fff; padding:14px 16px; z-index:5; display:flex; align-items:center; gap:12px; }
   header .htxt { flex:1; min-width:0; }
@@ -37,7 +38,7 @@
   #showBtn button { display:block; width:min(560px,100%); margin:0 auto; height:56px; border:0; border-radius:28px; background:var(--red); color:#fff; font-size:18px; font-weight:700; cursor:pointer; }
   #showBtn button:disabled { opacity:.4; cursor:default; }
   #count { font-size:13px; color:var(--soft); text-align:center; margin-top:6px; }
-  .overlay { position:fixed; inset:0; background:var(--red); color:#fff; overflow-y:auto; z-index:10; padding:24px; display:none; }
+  .overlay { position:fixed; inset:0; background:var(--red); color:#fff; overflow-y:auto; overscroll-behavior:none; z-index:10; padding:24px; display:none; }
   .overlay.open { display:block; }
   .overlay .close { position:fixed; top:10px; right:14px; font-size:34px; color:#fff; background:none; border:0; cursor:pointer; }
   .overlay .inner { max-width:640px; margin:0 auto; text-align:center; }
@@ -52,6 +53,8 @@
   .acompact .line .nm { white-space:pre-line; }
   .acompact .line .en { font-size:12.5px; font-weight:400; color:var(--soft); margin-left:auto; text-align:right; }
   .base-cardbottom { display:flex; justify-content:flex-end; align-items:center; width:100%; padding:8px 2px 0; }
+  .cardqr { margin:16px auto 4px; background:#fff; border-radius:14px; padding:12px; width:max-content; max-width:100%; }
+  .cardqr .cap { color:#2b2b2b; font-size:12.5px; font-weight:600; text-align:center; padding-top:6px; max-width:220px; }
   #cardLinkBtn { border:0; background:none; font-size:28px; line-height:1; color:var(--red); padding:6px 4px; cursor:pointer; }
   #cardLinkBtn:active { opacity:.7; }
   /* modals */
@@ -157,6 +160,7 @@
     <div class="phrase" id="phrase"></div>
     <div class="phrase-en" id="phraseEn"></div>
     <div id="cardList"></div>
+    <div class="cardqr"><div id="cardQr"></div><div class="cap" id="cardQrCap"></div></div>
     <div class="base-cardbottom">
       <button id="cardLinkBtn" type="button" aria-label="Copy link" title="Copy link">🔗</button>
     </div>
@@ -199,6 +203,7 @@
   </div>
 </div>
 
+<script src="qr.js"></script>
 <script src="languages.json.js"></script>
 <script>
 const PHRASES = {
@@ -424,16 +429,40 @@ function profileUrl(){
   u.search = q;
   return u.toString();
 }
+// QR for the share URL: generated fully offline by qr.js (davidshimjs, MIT).
+// Returns "" when the profile link is too long to encode — the card simply
+// hides the box and the 🔗 copy button keeps working as the fallback.
+function qrImg(url, cell){
+  try {
+    const qr = qrcode(0, "M");
+    qr.addData(url, "Byte");
+    qr.make();
+    return qr.createImgTag(cell || 3, 8);
+  } catch(e){ return ""; }
+}
 function copyLink(){
   const url = profileUrl();
-  const done = () => {};
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).catch(()=>{});
-  } else {
+  // fallback without keyboard: a plain select() on a normal textarea summons
+  // the soft keyboard on Android WebView, which resizes the viewport and
+  // visibly shakes the card. readonly + offscreen copies fine and stays quiet.
+  const fallback = () => {
     const ta = document.createElement("textarea");
-    ta.value = url; document.body.appendChild(ta); ta.select();
+    ta.value = url;
+    ta.readOnly = true;
+    ta.style.position = "fixed";
+    ta.style.top = "-2000px";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    try { ta.setSelectionRange(0, ta.value.length); } catch(e){}
     try { document.execCommand("copy"); } catch(e){}
     document.body.removeChild(ta);
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(()=>{}, fallback);
+  } else {
+    fallback();
   }
 }
 
@@ -548,7 +577,7 @@ function renderGrid(){
   const uil = state.ui || "en";
   const list = ALLERGENS.filter(a => {
     if (!needle) return true;
-    return (name(a, uil) + " " + a.names.en + " " + a.id).toLowerCase().includes(needle);
+    return (name(a, uil) + " " + a.names.en + " " + name(a, state.lang) + " " + a.id).toLowerCase().includes(needle);
   });
   const custs = CUSTOM_DEFS.filter(d => !needle || d.name.toLowerCase().includes(needle));
   document.getElementById("noRes").style.display = (list.length || custs.length) ? "none" : "block";
@@ -571,7 +600,8 @@ function renderGrid(){
         <div class="top">
           <div>
             <div class="name">${esc(name(a, uil))}</div>
-            ${uil!=="en" ? `<div class="en">${esc(a.names.en)}</div>` : ""}
+            ${(() => { const wn = name(a, state.lang); const un = name(a, uil);
+               return (wn !== un) ? `<div class="en" dir="auto">${esc(wn)}</div>` : ""; })()}
           </div>
           <div class="check">✓</div>
         </div>
@@ -623,8 +653,13 @@ function openCard(){
       <span class="nm">${esc(d.name)}</span>
     </div>`).join("");
   document.getElementById("cardList").innerHTML = `<div class="acompact">${lines}</div>`;
-  // no QR and no printed URL on the card: a tap-to-copy 🔗 button does the
-  // sharing, and the card stays fully offline-readable at a glance.
+  // QR encodes profileUrl() exactly; caption follows the WAITER language so
+  // the person holding the card knows what the square is for.
+  const qurl = profileUrl();
+  document.getElementById("cardQr").innerHTML = qrImg(qurl, 3);
+  const wp = packOf(state.lang);
+  document.getElementById("cardQrCap").textContent = (wp && wp.ui && wp.ui[24]) || "Scan to open this card on your phone";
+  document.querySelector(".cardqr").style.display = qurl && document.getElementById("cardQr").innerHTML ? "" : "none";
   document.getElementById("card").setAttribute("dir", RTL.has(state.lang) ? "rtl" : "ltr");
   openDlg("card");
   });
@@ -790,8 +825,7 @@ document.getElementById("onboardGo").addEventListener("click", ()=>{
 
 syncLangButtons(); applyUIText(); renderGrid();
 if (state.fromShare || state.lang !== "en" || state.ui !== "en") {
-  ensurePack(state.lang); ensurePack(state.ui || "en");
-  (async () => { await ensurePack(state.ui || "en"); applyUIText(); renderGrid(); })();
+  (async () => { await ensurePack(state.lang); await ensurePack(state.ui || "en"); applyUIText(); renderGrid(); })();
 }
 if (demo === "card-ja" || state.fromShare) openCard();
 
