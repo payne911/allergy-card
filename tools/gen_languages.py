@@ -133,11 +133,13 @@ def parse_english():
 
 _JAR = os.path.join(os.environ.get("TMPDIR", "/tmp"), "allergy_gtx_cookies")
 
-def _http_get(url):
-    """One GET through the abuse-check redirects. Returns (status, body)."""
+def _http_post(url, query):
+    """POST the (possibly long) query as a form field. Long GET urls stall
+    past curl's 40s max-time; POST answers in ~1s."""
     r = subprocess.run(
         ["curl", "-sL", "-c", _JAR, "-b", _JAR, "--max-time", "40",
-         "-w", "\n%{http_code}", url],
+         "-w", "\n%{http_code}", "-X", "POST",
+         "--data-urlencode", "q=" + query, url],
         capture_output=True, text=True)
     body, _, status = r.stdout.rpartition("\n")
     try:
@@ -152,22 +154,24 @@ def _curl_batch(tl, queries):
     service merge lines; a count mismatch splits recursively down to single
     strings, which always resolve. 404 means the locale is unsupported;
     429/302 are transient throttling and get retries with growing pauses."""
+    if not queries:
+        return []
     if len(queries) > 24:
         mid = len(queries) // 2
         return _curl_batch(tl, queries[:mid]) + _curl_batch(tl, queries[mid:])
     joined = "\n".join(queries)
     url = ("https://translate.googleapis.com/translate_a/single?client=gtx"
-           "&sl=en&tl=" + urllib.parse.quote(tl) + "&dt=t&q="
-           + urllib.parse.quote(joined))
+           "&sl=en&tl=" + urllib.parse.quote(tl) + "&dt=t")
     code, body, last = 0, "", None
-    for attempt in range(6):
-        code, body = _http_get(url)
+    for attempt in range(8):
+        code, body = _http_post(url, joined)
         if code == 200 and body.lstrip().startswith("["):
             break
         if code == 404:
             raise UnsupportedError(tl)
         last = "http %d" % code
-        time.sleep(2.5 * (attempt + 1))
+        # 302s are intermittent, not load-based: flat short pause, more tries.
+        time.sleep(1.5)
     else:
         raise RuntimeError("%s: %s" % (tl, last))
     arr = json.loads(body)
