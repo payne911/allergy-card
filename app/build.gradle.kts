@@ -15,6 +15,28 @@ android {
         versionName = "2.0"
     }
 
+    signingConfigs {
+        create("release") {
+            // Populated in CI from repository secrets (see .github/workflows/release.yml).
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (!keystorePath.isNullOrBlank()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Unsigned when no keystore env is present (local builds); signed in CI.
+            if (System.getenv("KEYSTORE_PATH")?.isNotBlank() == true) {
+                signingConfig = signingConfigs.getByName("release")
+            }
+        }
+    }
+
     // Manifest already picks .MainActivity (a plain Activity), no androidx needed.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
