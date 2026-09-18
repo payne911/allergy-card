@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.schwing.allergycard"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.schwing.allergycard"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 2
         versionName = "2.0"
     }
