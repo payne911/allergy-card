@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.AllergyCard" parent="android:Theme.Material.Light.NoActionBar">
+        <!-- Red status bar on Android 14 and below (classic opaque bars). -->
         <item name="android:statusBarColor">#B00020</item>
-        <!-- Android 15+ enforces edge-to-edge; the inset-padding approach in
-             MainActivity proved unreliable on-device, so opt out and let the
-             system draw opaque bars with the app laid out below them. -->
-        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+        <!-- Android 15+ with targetSdk 36: edge-to-edge is mandatory and
+             windowOptOutEdgeToEdgeEnforcement is a no-op, so the bars are
+             transparent and MainActivity pads the WebView's container by the
+             system-bar insets itself. Black window background shows behind
+             the bars; status-bar icons stay light (the default). -->
+        <item name="android:windowBackground">#000000</item>
     </style>
 </resources>
