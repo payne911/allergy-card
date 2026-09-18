@@ -25,6 +25,24 @@ class MainActivity : Activity() {
         web.settings.domStorageEnabled = true // saved profile persists like localStorage
         web.settings.allowFileAccess = true   // the card loads bundled allergen photos
         web.webViewClient = WebViewClient()   // keep navigation inside the shell
+        // Android 15+ enforces edge-to-edge: without this the page draws under
+        // the status and navigation bars (clock/battery overlap). Pad the
+        // WebView by the system-bar insets instead; no androidx needed.
+        web.setOnApplyWindowInsetsListener { v, insets ->
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
+                val bars = insets.getInsets(android.view.WindowInsets.Type.systemBars())
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+            } else {
+                @Suppress("DEPRECATION")
+                v.setPadding(
+                    insets.systemWindowInsetLeft,
+                    insets.systemWindowInsetTop,
+                    insets.systemWindowInsetRight,
+                    insets.systemWindowInsetBottom
+                )
+            }
+            insets
+        }
         setContentView(web)
 
         if (savedInstanceState != null) {
