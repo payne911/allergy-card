@@ -28,9 +28,11 @@ Change something once in `docs/`, and both the site and the app get it.
 
 ## Features
 
-- 14 major allergens (peanuts, tree nuts, dairy, egg, wheat/gluten, soy, peas, chickpeas,
-  lentils, fish, shellfish, sesame, mustard, sulfites), each shown with a
-  big emoji so the card reads at a glance. A search bar filters the list instantly.
+- **44 built-in allergens**, each with a big emoji so the card reads at a glance —
+  from the usual majors (peanuts, tree nuts, milk, egg, wheat, soy, fish, shellfish,
+  sesame, mustard, sulfites) to meats, poultry, grains, fruits, vegetables, seeds,
+  gelatin and chocolate. A search bar filters the list instantly, and a settings
+  switch drops the emojis for a text-only layout.
 - **Add your own restrictions.** Anything beyond the built-in list — a rare allergy, a
   preference, a medication interaction — can be added with your own wording; the emoji
   is optional (tap a preset or type one with your phone keyboard, or leave it blank).
@@ -40,17 +42,19 @@ Change something once in `docs/`, and both the site and the app get it.
 - **188 languages.** On first launch you pick your own language for the app itself —
   the interface follows it from then on (change it later from the ⚙️ settings gear).
   The waiter's language is a separate, searchable picker covering everything from
-  French and Japanese to Quechua, Cantonese and Amharic. Dialogs close with a
-  simple X, and on Android the back button closes the top dialog first.
-- A shareable card link: the whole profile (allergens, custom entries, language)
-  is encoded in the URL, so copying the link lets anyone open the identical card
-  on their own phone. Older links keep working — classic `?a=ids&lang=xx`
-  links (including the retired id:level format) open exactly as before.
+  French and Japanese to Quechua, Cantonese and Amharic. Every dialog closes with a
+  plain X, and on Android the back button closes the topmost dialog first.
+- **Shareable card links.** The whole profile — allergens, custom entries, waiter
+  language — is encoded in the URL (`?a=id,id&lang=xx`, custom entries as
+  `c=emoji~text` params), so copying the link opens the identical card on anyone's
+  phone. The waiter card also carries an offline QR code (generated on-device,
+  caption in the waiter's language) for the same one-scan handoff. Older link
+  formats keep working.
+- A full-screen, high-contrast "show the waiter" card — big ⚠️ header, one allergen
+  per line, subtitles in the waiter's language, no clutter — with a tap-to-copy 🔗
+  button at the bottom and RTL support for right-to-left scripts.
 - Example dishes that commonly contain each allergen, plus hidden-source notes
   (fish sauce in Southeast Asian cooking, wheat in soy sauce, shrimp paste in curries…).
-- A full-screen, high-contrast "show the waiter" card — big, one line per
-  allergen, no clutter — with a tap-to-copy 🔗 button at the bottom for
-  sharing, and RTL support for right-to-left scripts.
 - The ⚙️ settings gear in the title bar opens a small settings dialog: app
   language (one more tap to the full list) and an "allergen emojis" switch
   for a text-only layout.
@@ -80,27 +84,30 @@ the web build, plain files in the APK).
 
 ## Build (Android)
 
-Open in Android Studio, or:
+Debug builds in Android Studio, or:
 
 ```bash
 gradle assembleDebug
 ```
 
-No design decision to make about "keeping the app in sync": the Gradle
-`syncWebAssets` task copies `docs/` into `app/src/main/assets/` on every build,
-so the APK always ships the same card the website serves. The shell itself
-needs nothing beyond the Android SDK — one WebView, zero dependencies.
+Releases go through GitHub Actions: pushing a `v*` tag builds a signed
+`bundleRelease` AAB (keystore comes from repo secrets) and uploads it to the
+**internal testing** track on Google Play — see
+[`.github/workflows/release.yml`](.github/workflows/release.yml).
 
-A GitHub Actions workflow that builds `app-debug.apk` is ready in
-`android-workflow.yml.disabled`; move it into `.github/workflows/` to enable CI
-(requires a token with the `workflow` scope).
+No design decision to make about "keeping the app in sync": the Gradle
+`syncWebAssets` task copies `docs/` into the app bundle on every build,
+so the APK/AAB always ships the same card the website serves. The shell itself
+needs nothing beyond the Android SDK — one WebView, zero dependencies.
 
 ## Disclaimer
 
-This is a personal project, nothing more. It is provided as-is, with no guarantee
-of any kind. Translations and example dishes are best-effort reference material,
-not medical advice. I am not responsible for any issues that come from using this
-app — always double-check with the restaurant and carry your medication.
+**Reference only — not medical advice.** Always confirm with staff and carry your
+medication. (This note also lives permanently in the app itself.)
+
+This is a personal project, provided as-is, with no guarantee of any kind.
+Translations and example dishes are best-effort reference material. I am not
+responsible for any issues that come from using this app.
 
 ## Web preview (this repo)
 
