@@ -25,24 +25,9 @@ class MainActivity : Activity() {
         web.settings.domStorageEnabled = true // saved profile persists like localStorage
         web.settings.allowFileAccess = true   // the card loads bundled allergen photos
         web.webViewClient = WebViewClient()   // keep navigation inside the shell
-        // Android 15+ enforces edge-to-edge: without this the page draws under
-        // the status and navigation bars (clock/battery overlap). Pad the
-        // WebView by the system-bar insets instead; no androidx needed.
-        web.setOnApplyWindowInsetsListener { v, insets ->
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.R) {
-                val bars = insets.getInsets(android.view.WindowInsets.Type.systemBars())
-                v.setPadding(bars.left, bars.top, bars.right, bars.bottom)
-            } else {
-                @Suppress("DEPRECATION")
-                v.setPadding(
-                    insets.systemWindowInsetLeft,
-                    insets.systemWindowInsetTop,
-                    insets.systemWindowInsetRight,
-                    insets.systemWindowInsetBottom
-                )
-            }
-            insets
-        }
+        // Android 15+ enforces edge-to-edge; the theme opts out via
+        // android:windowOptOutEdgeToEdgeEnforcement so the system draws opaque
+        // bars and lays the app out below them (no manual inset math needed).
         setContentView(web)
 
         if (savedInstanceState != null) {
@@ -58,8 +43,20 @@ class MainActivity : Activity() {
     }
 
     // Step back through the in-app screens before falling back to closing.
+    // Ask the page first: dialogs (waiter card, settings, pickers) are tracked
+    // in JS, which stays correct even where WebView history entries don't
+    // exist (file://). Only then fall back to history, then to closing.
     override fun onBackPressed() {
-        if (web.canGoBack()) web.goBack() else super.onBackPressed()
+        web.evaluateJavascript("window.AllergyApp ? AllergyApp.topDialog() : null") { r ->
+            val top = r?.trim()?.trim('"')
+            if (!top.isNullOrEmpty() && top != "null") {
+                web.evaluateJavascript("AllergyApp.closeTopDialog()", null)
+            } else if (web.canGoBack()) {
+                web.goBack()
+            } else {
+                super.onBackPressed()
+            }
+        }
     }
 
     override fun onDestroy() {

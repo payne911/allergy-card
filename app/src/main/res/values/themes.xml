@@ -2,5 +2,9 @@
 <resources>
     <style name="Theme.AllergyCard" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">#B00020</item>
+        <!-- Android 15+ enforces edge-to-edge; the inset-padding approach in
+             MainActivity proved unreliable on-device, so opt out and let the
+             system draw opaque bars with the app laid out below them. -->
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 </resources>
