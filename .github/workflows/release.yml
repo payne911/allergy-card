@@ -35,18 +35,26 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0"
 
       - name: Check required secrets are set
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: |
           missing=0
-          [ -n "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" ] || { echo "Missing secret ANDROID_KEYSTORE_BASE64"; missing=1; }
-          [ -n "${{ secrets.KEYSTORE_PASSWORD }}" ] || { echo "Missing secret KEYSTORE_PASSWORD"; missing=1; }
-          [ -n "${{ secrets.KEY_ALIAS }}" ] || { echo "Missing secret KEY_ALIAS"; missing=1; }
-          [ -n "${{ secrets.KEY_PASSWORD }}" ] || { echo "Missing secret KEY_PASSWORD"; missing=1; }
-          [ -n "${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}" ] || { echo "Missing secret PLAY_SERVICE_ACCOUNT_JSON"; missing=1; }
+          [ -n "$ANDROID_KEYSTORE_BASE64" ] || { echo "Missing secret ANDROID_KEYSTORE_BASE64"; missing=1; }
+          [ -n "$KEYSTORE_PASSWORD" ] || { echo "Missing secret KEYSTORE_PASSWORD"; missing=1; }
+          [ -n "$KEY_ALIAS" ] || { echo "Missing secret KEY_ALIAS"; missing=1; }
+          [ -n "$KEY_PASSWORD" ] || { echo "Missing secret KEY_PASSWORD"; missing=1; }
+          [ -n "$PLAY_SERVICE_ACCOUNT_JSON" ] || { echo "Missing secret PLAY_SERVICE_ACCOUNT_JSON"; missing=1; }
           exit $missing
 
       - name: Decode keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
 
       - name: Build signed release AAB
         env:
