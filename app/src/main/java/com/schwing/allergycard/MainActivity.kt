@@ -1,7 +1,7 @@
 package com.schwing.allergycard
 
 import android.app.Activity
-import android.graphics.Rect
+import android.graphics.Insets
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowInsets
@@ -71,12 +71,12 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun systemBars(insets: WindowInsets): Rect =
+    private fun systemBars(insets: WindowInsets): Insets =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             insets.getInsets(WindowInsets.Type.systemBars())
         } else {
             @Suppress("DEPRECATION")
-            Rect(
+            Insets.of(
                 insets.systemWindowInsetLeft,
                 insets.systemWindowInsetTop,
                 insets.systemWindowInsetRight,
